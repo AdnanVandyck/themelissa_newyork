@@ -38,14 +38,14 @@ const UnitCard = ({ unit }) => {
                 position: 'absolute',
                 top: '10px',
                 right: '10px',
-                backgroundColor: '#27ae60',
+                backgroundColor: unit.available ? '#27ae60' : '#e74c3c',
                 color: 'white',
                 padding: '0.3rem 0.8rem',
                 borderRadius: '15px',
                 fontSize: '0.8rem',
                 fontWeight: 'bold'
             }}>
-                Available
+                {unit.available ? 'Available' : 'Not Available'}
             </div>
         )}
         </div>
@@ -58,7 +58,7 @@ const UnitCard = ({ unit }) => {
 
         <button 
           style={{
-            backgroundColor: '#3498db',
+            backgroundColor: unit.available ? '#3498db' : '#95a5a6',
             color: 'white',
             border: 'none',
             padding: '0.8rem 1.5rem',
@@ -67,14 +67,27 @@ const UnitCard = ({ unit }) => {
             fontWeight: 'bold',
             width: '100%',
             marginTop: '1rem',
-            cursor: 'pointer',
-            transition: 'background-color 0.3s ease' 
+            cursor: unit.available ? 'pointer' : 'not-allowed'
           }}
-          onClick={() => alert(`View details for ${unit.unitnumber}`)}
-          onMouseEnter={(e) => e.target.style.backgroundColor = '#2980b9'}
-          onMouseLeave={(e) => e.target.style.backgroundColor = '#3498db'} 
+          onClick={() => {
+            if (unit.available) {
+              alert(`View details for ${unit.title}`)
+            } else {
+              alert(`${unit.title} is currently not available`)
+            }
+          }}
+          onMouseEnter={(e) => {
+            if (unit.available) {
+              e.target.style.backgroundColor = '#2980b9'
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (unit.available) {
+              e.target.style.backgroundColor = '#3498db'
+            }
+          }}
         >
-          Learn More 
+          {unit.available ? 'View Unit Details' : 'Not Available'} 
         </button>
       </div>
     </div>
