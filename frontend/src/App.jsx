@@ -5,6 +5,7 @@ import Footer from "./components/layout/Footer"
 import Home from "./pages/Home"
 import UnitDetails from "./pages/UnitDetails";
 import AdminLogin from "./pages/AdminLogin";
+import AdminDashboard from "./pages/AdminDashboard";
 
 
 function App() {
@@ -17,6 +18,7 @@ function App() {
             <Route path="/" element={<Home />}/>
             <Route path="/unit/:id" element={<UnitDetails />}/>
             <Route path="/admin/login" element={<AdminLogin />}/>
+            <Route path="/admin/dashboard" element={<AdminDashboard />}/>
           </Routes>
         </main>
         <Footer />
