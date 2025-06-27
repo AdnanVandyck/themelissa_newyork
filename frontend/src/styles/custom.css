@@ -1,0 +1,36 @@
+/* Main Heading Font - Easy to Change */
+.main-heading {
+  font-family: 'Georgia', serif;
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+/* Unit Title Font - Easy to Change */
+.unit-title {
+  font-family: 'Arial', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #34495e;
+}
+
+/* Price Text Font - Easy to Change */
+.price-text {
+  font-family: 'Helvetica', sans-serif;
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #27ae60;
+}
+
+/* Regular Text Font - Easy to Change */
+.regular-text {
+  font-family: 'Arial', sans-serif;
+  font-size: 0.9rem;
+  color: #7f8c8d;
+}
+
+/* Custom Colors - Easy to Change */
+.melissa-blue { color: #3498db; }
+.melissa-green { color: #27ae60; }
+.melissa-purple { color: #9b59b6; }
+.melissa-dark { color: #2c3e50; }
