@@ -58,7 +58,7 @@ const AdminDashboard = () => {
   
   const handleDeleteUnit = (unitId) => {
     const unit = units.find(u => u._id === unitId)
-    if (confirm(`Are you sure you want to delete ${unit.title}?`)) {
+    if (confirm(`Are you sure you want to delete ${unit.unitnumber}?`)) {
       setUnits(units.filter(u => u._id !== unitId))
     }
   }
@@ -198,82 +198,117 @@ const AdminDashboard = () => {
               </th>
             </tr>
           </thead>
-          <tbody>
-            {units.map((unit) => (
-              <tr key={unit._id} style={{ borderBottom: '1px solid #dee2e6' }}>
-                <td style={{ padding: '1rem' }}>
-                  <strong>{unit.unitnumber}</strong>
+            {units.length === 0 ? (
+            // Empty State
+            <tbody>
+                <tr>
+                <td colSpan="5" style={{ 
+                    padding: '3rem', 
+                    textAlign: 'center',
+                    color: '#6c757d'
+                }}>
+                    <div>
+                    <h4>No Units Found</h4>
+                    <p>There are currently no units in the system.</p>
+                    <button
+                        onClick={() => alert('Add Unit feature coming soon!')}
+                        style={{
+                        backgroundColor: '#28a745',
+                        color: 'white',
+                        border: 'none',
+                        padding: '0.75rem 1.5rem',
+                        borderRadius: '5px',
+                        fontSize: '0.9rem',
+                        fontWeight: 'bold',
+                        cursor: 'pointer'
+                        }}
+                    >
+                        + Add Your First Unit
+                    </button>
+                    </div>
                 </td>
-                <td style={{ padding: '1rem' }}>
-                  ${unit.price}/mo
-                </td>
-                <td style={{ padding: '1rem' }}>
-                  {unit.bedrooms === 0 ? 'Studio' : `${unit.bedrooms}bd`} / {unit.bathrooms}ba
-                </td>
-                <td style={{ padding: '1rem' }}>
+                </tr>
+            </tbody>
+            ) : (
+            // Normal State - Show Units
+            <tbody>
+                {units.map((unit) => (
+                <tr key={unit._id} style={{ borderBottom: '1px solid #dee2e6' }}>
+                    <td style={{ padding: '1rem' }}>
+                    <strong>Unit {unit.unitnumber}</strong>
+                    </td>
+                    <td style={{ padding: '1rem' }}>
+                    ${unit.price}/mo
+                    </td>
+                    <td style={{ padding: '1rem' }}>
+                    {unit.bedrooms === 0 ? 'Studio' : `${unit.bedrooms}bd`} / {unit.bathrooms}ba
+                    </td>
+                    <td style={{ padding: '1rem' }}>
+                    <button
+                        onClick={() => handleToggleAvailability(unit._id)}
+                        style={{
+                        padding: '0.25rem 0.5rem',
+                        borderRadius: '12px',
+                        fontSize: '0.8rem',
+                        fontWeight: 'bold',
+                        backgroundColor: unit.available ? '#d4edda' : '#f8d7da',
+                        color: unit.available ? '#155724' : '#721c24',
+                        border: 'none',
+                        cursor: 'pointer'
+                        }}
+                    >
+                        {unit.available ? 'Available' : 'Not Available'}
+                    </button>
+                    </td>
+                    <td style={{ padding: '1rem' }}>
+                    <Link to={`/unit/${unit._id}`} style={{ textDecoration: 'none' }}>
+                        <button style={{
+                        backgroundColor: '#17a2b8',
+                        color: 'white',
+                        border: 'none',
+                        padding: '0.25rem 0.5rem',
+                        borderRadius: '3px',
+                        fontSize: '0.8rem',
+                        cursor: 'pointer',
+                        marginRight: '0.5rem'
+                        }}>
+                        View
+                        </button>
+                    </Link>
                     <button 
-                    onClick={() => handleToggleAvailability(unit._id)}
-                    style={{
-                    padding: '0.25rem 0.5rem',
-                    borderRadius: '12px',
-                    fontSize: '0.8rem',
-                    fontWeight: 'bold',
-                    backgroundColor: unit.available ? '#d4edda' : '#f8d7da',
-                    color: unit.available ? '#155724' : '#721c24',
-                    border: 'none',
-                    cursor: 'pointer'
-                  }}>
-                    {unit.available ? 'Available' : 'Not Available'}
+                        onClick={() => alert(`Edit Unit ${unit.unitnumber} - Feature coming soon!`)}
+                        style={{
+                        backgroundColor: '#ffc107',
+                        color: 'black',
+                        border: 'none',
+                        padding: '0.25rem 0.5rem',
+                        borderRadius: '3px',
+                        fontSize: '0.8rem',
+                        cursor: 'pointer',
+                        marginRight: '0.5rem'
+                        }}
+                    >
+                        Edit
                     </button>
-                </td>
-                <td style={{ padding: '1rem' }}>
-                  <Link to={`/unit/${unit._id}`} style={{ textDecoration: 'none' }}>
-                    <button style={{
-                      backgroundColor: '#17a2b8',
-                      color: 'white',
-                      border: 'none',
-                      padding: '0.25rem 0.5rem',
-                      borderRadius: '3px',
-                      fontSize: '0.8rem',
-                      cursor: 'pointer',
-                      marginRight: '0.5rem'
-                    }}>
-                      View
+                    <button 
+                        onClick={() => handleDeleteUnit(unit._id)}
+                        style={{
+                        backgroundColor: '#dc3545',
+                        color: 'white',
+                        border: 'none',
+                        padding: '0.25rem 0.5rem',
+                        borderRadius: '3px',
+                        fontSize: '0.8rem',
+                        cursor: 'pointer'
+                        }}
+                    >
+                        Delete
                     </button>
-                  </Link>
-                  <button 
-                    onClick={() => alert(`Edit ${unit.unitnumber} - Feature coming soon!`)}
-                    style={{
-                      backgroundColor: '#ffc107',
-                      color: 'black',
-                      border: 'none',
-                      padding: '0.25rem 0.5rem',
-                      borderRadius: '3px',
-                      fontSize: '0.8rem',
-                      cursor: 'pointer',
-                      marginRight: '0.5rem'
-                    }}
-                  >
-                    Edit
-                  </button>
-                 <button 
-                   onClick={() => handleDeleteUnit(unit._id)}
-                   style={{
-                     backgroundColor: '#dc3545',
-                     color: 'white',
-                     border: 'none',
-                     padding: '0.25rem 0.5rem',
-                     borderRadius: '3px',
-                     fontSize: '0.8rem',
-                     cursor: 'pointer'
-                   }}
-                 >
-                   Delete
-                 </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
+                    </td>
+                </tr>
+                ))}
+            </tbody>
+            )}
         </table>
       </div>
     </div>
