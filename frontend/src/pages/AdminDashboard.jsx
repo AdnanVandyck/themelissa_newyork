@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 
 const units = [{
   _id: 1,
@@ -39,16 +40,77 @@ const units = [{
 ]
 
 const AdminDashboard = () => {
-return (
+    const handleLogout = () => {
+    if (confirm('Are you sure you want to logout?')) {
+      window.location.href = '/admin/login'
+    }
+  }
+
+
+  return (
     <div style={{ padding: '2rem' }}>
-      <div style={{ marginBottom: '2rem' }}>
-        <h1 className="main-heading">Admin Dashboard</h1>
-        <p style={{ color: '#7f8c8d' }}>
-          Welcome back! Manage all units for The Melissa NYC.
-        </p>
+      {/* Header Section */}
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center',
+        marginBottom: '2rem',
+        flexWrap: 'wrap',
+        gap: '1rem'
+      }}>
+        <div>
+          <h1 className="main-heading" style={{ margin: 0 }}>Admin Dashboard</h1>
+          <p style={{ color: '#7f8c8d', margin: 0 }}>
+            Welcome back! Manage all units for The Melissa NYC.
+          </p>
+        </div>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <button
+            onClick={() => alert('Add Unit feature coming soon!')}
+            style={{
+              backgroundColor: '#28a745',
+              color: 'white',
+              border: 'none',
+              padding: '0.75rem 1.5rem',
+              borderRadius: '5px',
+              fontSize: '0.9rem',
+              fontWeight: 'bold',
+              cursor: 'pointer'
+            }}
+          >
+            + Add Unit
+          </button>
+          <Link to="/" style={{ textDecoration: 'none' }}>
+            <button style={{
+              backgroundColor: '#6c757d',
+              color: 'white',
+              border: 'none',
+              padding: '0.75rem 1.5rem',
+              borderRadius: '5px',
+              fontSize: '0.9rem',
+              cursor: 'pointer'
+            }}>
+              View Site
+            </button>
+          </Link>
+          <button
+            onClick={handleLogout}
+            style={{
+              backgroundColor: '#dc3545',
+              color: 'white',
+              border: 'none',
+              padding: '0.75rem 1.5rem',
+              borderRadius: '5px',
+              fontSize: '0.9rem',
+              cursor: 'pointer'
+            }}
+          >
+            Logout
+          </button>
+        </div>
       </div>
       
-      {/* Quick Stats */}
+      {/* Quick Stats - same as before */}
       <div style={{ 
         display: 'grid', 
         gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', 
@@ -84,7 +146,7 @@ return (
         </div>
       </div>
       
-      {/* Units Table */}
+      {/* Units Table - same as before */}
       <div style={{ 
         backgroundColor: 'white', 
         borderRadius: '8px', 
@@ -144,39 +206,51 @@ return (
                   </span>
                 </td>
                 <td style={{ padding: '1rem' }}>
-                  <button style={{
-                    backgroundColor: '#17a2b8',
-                    color: 'white',
-                    border: 'none',
-                    padding: '0.25rem 0.5rem',
-                    borderRadius: '3px',
-                    fontSize: '0.8rem',
-                    cursor: 'pointer',
-                    marginRight: '0.5rem'
-                  }}>
-                    View
-                  </button>
-                  <button style={{
-                    backgroundColor: '#ffc107',
-                    color: 'black',
-                    border: 'none',
-                    padding: '0.25rem 0.5rem',
-                    borderRadius: '3px',
-                    fontSize: '0.8rem',
-                    cursor: 'pointer',
-                    marginRight: '0.5rem'
-                  }}>
+                  <Link to={`/unit/${unit._id}`} style={{ textDecoration: 'none' }}>
+                    <button style={{
+                      backgroundColor: '#17a2b8',
+                      color: 'white',
+                      border: 'none',
+                      padding: '0.25rem 0.5rem',
+                      borderRadius: '3px',
+                      fontSize: '0.8rem',
+                      cursor: 'pointer',
+                      marginRight: '0.5rem'
+                    }}>
+                      View
+                    </button>
+                  </Link>
+                  <button 
+                    onClick={() => alert(`Edit ${unit.unitnumber} - Feature coming soon!`)}
+                    style={{
+                      backgroundColor: '#ffc107',
+                      color: 'black',
+                      border: 'none',
+                      padding: '0.25rem 0.5rem',
+                      borderRadius: '3px',
+                      fontSize: '0.8rem',
+                      cursor: 'pointer',
+                      marginRight: '0.5rem'
+                    }}
+                  >
                     Edit
                   </button>
-                  <button style={{
-                    backgroundColor: '#dc3545',
-                    color: 'white',
-                    border: 'none',
-                    padding: '0.25rem 0.5rem',
-                    borderRadius: '3px',
-                    fontSize: '0.8rem',
-                    cursor: 'pointer'
-                  }}>
+                  <button 
+                    onClick={() => {
+                      if (confirm(`Are you sure you want to delete ${unit.unitnumber}?`)) {
+                        alert('Delete feature coming soon!')
+                      }
+                    }}
+                    style={{
+                      backgroundColor: '#dc3545',
+                      color: 'white',
+                      border: 'none',
+                      padding: '0.25rem 0.5rem',
+                      borderRadius: '3px',
+                      fontSize: '0.8rem',
+                      cursor: 'pointer'
+                    }}
+                  >
                     Delete
                   </button>
                 </td>
