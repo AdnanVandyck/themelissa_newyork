@@ -1,14 +1,40 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+
 
 const UnitForm = ({ isOpen, onClose, unit, onSave }) => {
   const [formData, setFormData] = useState({
-    unitNumber: unit?.unitNumber || '',
-    price: unit?.price || '',
-    bedrooms: unit?.bedrooms || 0,
-    bathrooms: unit?.bathrooms || 1,
-    sqft: unit?.sqft || '',
-    available: unit?.available !== undefined ? unit.available : true
+    unitNumber: '',
+    price: '',
+    bedrooms: 0,
+    bathrooms: 1,
+    sqft: '',
+    available: true
   })
+
+  // ← Add useEffect to update formData when unit changes
+  useEffect(() => {
+    if (unit) {
+      // Editing existing unit
+      setFormData({
+        unitNumber: unit.unitNumber || '',
+        price: unit.price || '',
+        bedrooms: unit.bedrooms || 0,
+        bathrooms: unit.bathrooms || 1,
+        sqft: unit.sqft || '',
+        available: unit.available !== undefined ? unit.available : true
+      })
+    } else {
+      // Adding new unit
+      setFormData({
+        unitNumber: '',
+        price: '',
+        bedrooms: 0,
+        bathrooms: 1,
+        sqft: '',
+        available: true
+      })
+    }
+  }, [unit])  // ← Run this effect when unit prop changes
 
   if (!isOpen) return null
 
