@@ -2,7 +2,7 @@ import React from 'react'
 
 
 const UnitCard = ({ unit }) => {
-  return (
+    return (
     <div style={{
       border: '2px solid #e8e8e8',
       borderRadius: '12px',
@@ -14,7 +14,7 @@ const UnitCard = ({ unit }) => {
         <div style={{ position: 'relative'}}>
             <img 
             src={unit.image || 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'}
-            alt={unit.title}
+            alt={unit.unitnumber}
             style={{
             width: '100%',
             height: '200px',
@@ -33,32 +33,32 @@ const UnitCard = ({ unit }) => {
             }}>
                 ${unit.price}/mo
             </div>
-            {unit.available && (
+            
+            {/* Clean badge logic */}
             <div style={{
                 position: 'absolute',
                 top: '10px',
                 right: '10px',
-                backgroundColor: unit.available ? '#27ae60' : '#e74c3c',
+                backgroundColor: unit.available === false ? '#e74c3c' : '#27ae60',  
                 color: 'white',
                 padding: '0.3rem 0.8rem',
                 borderRadius: '15px',
                 fontSize: '0.8rem',
                 fontWeight: 'bold'
             }}>
-                {unit.available ? 'Available' : 'Not Available'}
+                {unit.available === false ? 'Not Available' : 'Available'}  
             </div>
-        )}
         </div>
 
-
       <div style={{ padding: '1.5rem'}}>
-      <h4 className="unit-title">{unit.unitnumber}</h4>
-      <p className="regular-text">{unit.bedrooms === 0 ? 'Studio' : `${unit.bedrooms} Bedrooms`}</p>
-      <p className="regular-text">{unit.bathrooms} Bathroom{unit.bathrooms > 1 ? 's' : ''}</p>
-
+        <h4 className="unit-title">{unit.unitnumber}</h4>
+        <p className="regular-text">{unit.bedrooms === 0 ? 'Studio' : `${unit.bedrooms} Bedrooms`}</p>
+        <p className="regular-text">{unit.bathrooms} Bathroom{unit.bathrooms > 1 ? 's' : ''}</p>
+        <p className="regular-text">{unit.sqft} sqft</p>
+        
         <button 
           style={{
-            backgroundColor: unit.available ? '#3498db' : '#95a5a6',
+            backgroundColor: unit.available === false ? '#95a5a6' : '#3498db',  
             color: 'white',
             border: 'none',
             padding: '0.8rem 1.5rem',
@@ -67,27 +67,17 @@ const UnitCard = ({ unit }) => {
             fontWeight: 'bold',
             width: '100%',
             marginTop: '1rem',
-            cursor: unit.available ? 'pointer' : 'not-allowed'
+            cursor: unit.available === false ? 'not-allowed' : 'pointer'
           }}
           onClick={() => {
-            if (unit.available) {
-              alert(`View details for ${unit.title}`)
+            if (unit.available === false) {  
+              alert(`${unit.unitnumber} is currently not available`)
             } else {
-              alert(`${unit.title} is currently not available`)
-            }
-          }}
-          onMouseEnter={(e) => {
-            if (unit.available) {
-              e.target.style.backgroundColor = '#2980b9'
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (unit.available) {
-              e.target.style.backgroundColor = '#3498db'
+              alert(`View details for ${unit.unitnumber}`)
             }
           }}
         >
-          {unit.available ? 'View Unit Details' : 'Not Available'} 
+          {unit.available === false ? 'Not Available' : 'View Unit Details'} 
         </button>
       </div>
     </div>

@@ -2,15 +2,8 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Header from "./components/layout/Header";
 import Footer from "./components/layout/Footer"
-import TestUnits from "./pages/TestUnits"
+import Home from "./pages/Home"
 
-
-// const TestPage = () => (
-//   <div style={{ padding: '2rem', minHeight: '60vh'}}>
-//     <h2>The Melissa Nyc</h2>
-//     <p>Powered by Summit Leasing Services</p>
-//   </div>
-// );
 
 function App() {
   return (
@@ -19,7 +12,7 @@ function App() {
         <Header />
         <main className="flex-grow-1">
           <Routes>
-            <Route path="/" element={<TestUnits />}/>
+            <Route path="/" element={<Home />}/>
           </Routes>
         </main>
         <Footer />
