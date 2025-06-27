@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 
 
 const UnitCard = ({ unit }) => {
@@ -54,31 +55,46 @@ const UnitCard = ({ unit }) => {
         <h4 className="unit-title">{unit.unitnumber}</h4>
         <p className="regular-text">{unit.bedrooms === 0 ? 'Studio' : `${unit.bedrooms} Bedrooms`}</p>
         <p className="regular-text">{unit.bathrooms} Bathroom{unit.bathrooms > 1 ? 's' : ''}</p>
-        <p className="regular-text">{unit.sqft} sqft</p>
         
-        <button 
-          style={{
-            backgroundColor: unit.available === false ? '#95a5a6' : '#3498db',  
-            color: 'white',
-            border: 'none',
-            padding: '0.8rem 1.5rem',
-            borderRadius: '8px',
-            fontSize: '1rem',
-            fontWeight: 'bold',
-            width: '100%',
-            marginTop: '1rem',
-            cursor: unit.available === false ? 'not-allowed' : 'pointer'
-          }}
-          onClick={() => {
-            if (unit.available === false) {  
-              alert(`${unit.unitnumber} is currently not available`)
-            } else {
-              alert(`View details for ${unit.unitnumber}`)
-            }
-          }}
-        >
-          {unit.available === false ? 'Not Available' : 'View Unit Details'} 
-        </button>
+         {/* Update button to use Link instead of onClick */}
+        {unit.available === false ? (
+          <button 
+            style={{
+              backgroundColor: '#95a5a6',
+              color: 'white',
+              border: 'none',
+              padding: '0.8rem 1.5rem',
+              borderRadius: '8px',
+              fontSize: '1rem',
+              fontWeight: 'bold',
+              width: '100%',
+              marginTop: '1rem',
+              cursor: 'not-allowed'
+            }}
+            onClick={() => alert(`${unit.unitnumber} is currently not available`)}
+          >
+            Not Available
+          </button>
+        ) : (
+          <Link to={`/unit/${unit._id}`} style={{ textDecoration: 'none' }}>
+            <button 
+              style={{
+                backgroundColor: '#3498db',
+                color: 'white',
+                border: 'none',
+                padding: '0.8rem 1.5rem',
+                borderRadius: '8px',
+                fontSize: '1rem',
+                fontWeight: 'bold',
+                width: '100%',
+                marginTop: '1rem',
+                cursor: 'pointer'
+              }}
+            >
+              View Unit Details
+            </button>
+          </Link>
+        )}
       </div>
     </div>
   )
