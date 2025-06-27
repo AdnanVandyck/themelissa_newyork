@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
+import UnitForm from '../components/admin/UnitForm'
 
 const initialUnits = [{
   _id: 1,
@@ -41,6 +42,9 @@ const initialUnits = [{
 
 const AdminDashboard = () => {
     const [units, setUnits] = useState(initialUnits)
+    const [isFormOpen, setIsFormOpen] = useState(false)
+    const [editingUnit, setEditingUnit] = useState(null)
+
 
     const handleLogout = () => {
     if (confirm('Are you sure you want to logout?')) {
@@ -63,6 +67,26 @@ const AdminDashboard = () => {
     }
   }
 
+  const handleAddUnit = () => {
+    setEditingUnit(null)
+    setIsFormOpen(true)
+  }
+
+  const handleEditUnit = (unit) => {
+    setEditingUnit(unit)
+    setIsFormOpen(true)
+  }
+
+  const handleCloseForm = () => {
+    setIsFormOpen(false)
+    setEditingUnit(null)
+  }
+
+  const handleSaveUnit = (unitData) => {
+    console.log('Saving unit:', unitData)
+    // We'll implement this in the next step
+    setIsFormOpen(false)
+  }
 
   return (
     <div style={{ padding: '2rem' }}>
@@ -83,7 +107,7 @@ const AdminDashboard = () => {
         </div>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
           <button
-            onClick={() => alert('Add Unit feature coming soon!')}
+            onClick={handleAddUnit}
             style={{
               backgroundColor: '#28a745',
               color: 'white',
@@ -276,7 +300,7 @@ const AdminDashboard = () => {
                         </button>
                     </Link>
                     <button 
-                        onClick={() => alert(`Edit Unit ${unit.unitnumber} - Feature coming soon!`)}
+                        onClick={() => handleEditUnit(unit)}
                         style={{
                         backgroundColor: '#ffc107',
                         color: 'black',
@@ -311,6 +335,12 @@ const AdminDashboard = () => {
             )}
         </table>
       </div>
+            <UnitForm
+        isOpen={isFormOpen}
+        onClose={handleCloseForm}
+        unit={editingUnit}
+        onSave={handleSaveUnit}
+      />
     </div>
   )
 }
