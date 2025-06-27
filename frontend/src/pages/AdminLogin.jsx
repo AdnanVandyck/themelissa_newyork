@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 const AdminLogin = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   
@@ -83,23 +84,47 @@ const AdminLogin = () => {
             Password
           </label>
           <input
-            type="password"
+            type={showPassword ? 'text' : 'password'}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Enter your password"
             required
+            disabled={loading}
             style={{
               width: '100%',
               padding: '0.8rem',
               border: '1px solid #ddd',
               borderRadius: '5px',
-              fontSize: '1rem'
+              fontSize: '1rem',
+              backgroundColor: loading ? '#f8f9fa' : 'white'
             }}
           />
+
+          {/* Show Password Checkbox */}
+          <div style={{ marginTop: '0.5rem' }}>
+            <label style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              fontSize: '0.9rem',
+              fontWeight: 'normal',
+              cursor: 'pointer'
+            }}>
+              <input
+                type="checkbox"
+                checked={showPassword}
+                onChange={(e) => setShowPassword(e.target.checked)}
+                style={{ marginRight: '0.5rem' }}
+              />
+              Show password
+            </label>
+          </div>
         </div>
-        
+            
+
+
         <button
           type="submit"
+          disabled={loading}
           style={{
             width: '100%',
             padding: '1rem',
@@ -109,12 +134,14 @@ const AdminLogin = () => {
             borderRadius: '5px',
             fontSize: '1.1rem',
             fontWeight: 'bold',
-            cursor: 'pointer'
+            cursor: loading ? 'not-allowed' : 'pointer',
           }}
         >
-          Sign In
+          {loading ? 'Signing In...' : 'Sign In'}
         </button>
       </form>
+
+      
       {/* Demo Credentials Box */}
       <div style={{
         marginTop: '2rem',
