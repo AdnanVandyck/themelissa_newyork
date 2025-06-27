@@ -1,7 +1,7 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 
-const units = [{
+const initialUnits = [{
   _id: 1,
   unitnumber: '3A',
   price: 3500,
@@ -40,9 +40,26 @@ const units = [{
 ]
 
 const AdminDashboard = () => {
+    const [units, setUnits] = useState(initialUnits)
+
     const handleLogout = () => {
     if (confirm('Are you sure you want to logout?')) {
       window.location.href = '/admin/login'
+    }
+  }
+
+    const handleToggleAvailability = (unitId) => {
+    setUnits(units.map(unit => 
+      unit._id === unitId 
+        ? { ...unit, available: !unit.available }
+        : unit
+    ))
+  }
+  
+  const handleDeleteUnit = (unitId) => {
+    const unit = units.find(u => u._id === unitId)
+    if (confirm(`Are you sure you want to delete ${unit.title}?`)) {
+      setUnits(units.filter(u => u._id !== unitId))
     }
   }
 
@@ -110,7 +127,7 @@ const AdminDashboard = () => {
         </div>
       </div>
       
-      {/* Quick Stats - same as before */}
+      {/* Quick Stats  */}
       <div style={{ 
         display: 'grid', 
         gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', 
@@ -146,7 +163,7 @@ const AdminDashboard = () => {
         </div>
       </div>
       
-      {/* Units Table - same as before */}
+      {/* Units Table  */}
       <div style={{ 
         backgroundColor: 'white', 
         borderRadius: '8px', 
@@ -194,16 +211,20 @@ const AdminDashboard = () => {
                   {unit.bedrooms === 0 ? 'Studio' : `${unit.bedrooms}bd`} / {unit.bathrooms}ba
                 </td>
                 <td style={{ padding: '1rem' }}>
-                  <span style={{
+                    <button 
+                    onClick={() => handleToggleAvailability(unit._id)}
+                    style={{
                     padding: '0.25rem 0.5rem',
                     borderRadius: '12px',
                     fontSize: '0.8rem',
                     fontWeight: 'bold',
                     backgroundColor: unit.available ? '#d4edda' : '#f8d7da',
-                    color: unit.available ? '#155724' : '#721c24'
+                    color: unit.available ? '#155724' : '#721c24',
+                    border: 'none',
+                    cursor: 'pointer'
                   }}>
                     {unit.available ? 'Available' : 'Not Available'}
-                  </span>
+                    </button>
                 </td>
                 <td style={{ padding: '1rem' }}>
                   <Link to={`/unit/${unit._id}`} style={{ textDecoration: 'none' }}>
@@ -235,24 +256,20 @@ const AdminDashboard = () => {
                   >
                     Edit
                   </button>
-                  <button 
-                    onClick={() => {
-                      if (confirm(`Are you sure you want to delete ${unit.unitnumber}?`)) {
-                        alert('Delete feature coming soon!')
-                      }
-                    }}
-                    style={{
-                      backgroundColor: '#dc3545',
-                      color: 'white',
-                      border: 'none',
-                      padding: '0.25rem 0.5rem',
-                      borderRadius: '3px',
-                      fontSize: '0.8rem',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Delete
-                  </button>
+                 <button 
+                   onClick={() => handleDeleteUnit(unit._id)}
+                   style={{
+                     backgroundColor: '#dc3545',
+                     color: 'white',
+                     border: 'none',
+                     padding: '0.25rem 0.5rem',
+                     borderRadius: '3px',
+                     fontSize: '0.8rem',
+                     cursor: 'pointer'
+                   }}
+                 >
+                   Delete
+                 </button>
                 </td>
               </tr>
             ))}
