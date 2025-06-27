@@ -16,8 +16,7 @@ const AdminLogin = () => {
          // Simple validation - in real app this would call an API
     setTimeout(() => {
       if (email === 'admin@melissa.com' && password === 'admin123') {
-        alert('Login successful! (Dashboard coming next)')
-        setLoading(false)
+        window.location.href = '/admin/dashboard'
       } else {
         setError('Invalid email or password. Try the demo credentials.')
         setLoading(false)
