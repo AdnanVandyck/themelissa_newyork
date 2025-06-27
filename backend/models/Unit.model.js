@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const UnitSchema = new mongoose.Schema({
-    unitnumber:{
+    unitNumber:{
         type: String,
         required: [true, 'Unit name is required'],
         maxlength: [5, 'Unit name cannot exceed 5 characters']

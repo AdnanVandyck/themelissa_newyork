@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 
 const allUnits = [{
   _id: '1',
-  unitnumber: '3A',
+  unitNumber: '3A',
   price: 3500,
   bedrooms: 0,
   bathrooms: 1,
@@ -13,7 +13,7 @@ const allUnits = [{
 },
 {
   _id: '2',
-  unitnumber: '2A',
+  unitNumber: '2A',
   price: 4500,
   bedrooms: 2,
   bathrooms: 1.5,
@@ -23,7 +23,7 @@ const allUnits = [{
 },
 {
   _id: '3',
-  unitnumber: '5A',
+  unitNumber: '5A',
   price: 6600,
   bedrooms: 1,
   bathrooms: 1,
@@ -33,7 +33,7 @@ const allUnits = [{
 },
 {
   _id: '4',
-  unitnumber: '4B',
+  unitNumber: '4B',
   price: 6500,
   bedrooms: 2,
   bathrooms: 2,
@@ -94,7 +94,7 @@ return (
       
       {/* Unit Info */}
       <div style={{ maxWidth: '600px', margin: '0 auto' }}>
-        <h1 className="unit-title">{unit.unitnumber}</h1>
+        <h1 className="unit-title">{unit.unitNumber}</h1>
         
         <div style={{ 
           display: 'grid', 

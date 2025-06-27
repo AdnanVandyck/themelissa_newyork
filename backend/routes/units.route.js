@@ -31,7 +31,7 @@ router.get('/:id', async (req, res) => {
             return res.status(404).json({message: 'Unit not found'});
         }
 
-        console.log('Unit found:', unit.unitnumber);
+        console.log('Unit found:', unit.unitNumber);
         res.json(unit)
     } catch (error) {
         console.log('Error fetching unit:', error.message);
@@ -52,7 +52,7 @@ router.post('/', async (req, res) => {
         const unit = new Unit(req.body);
         const savedUnit = await unit.save();
 
-        console.log('Unit created:', savedUnit.unitnumber);
+        console.log('Unit created:', savedUnit.unitNumber);
         res.status(201).json(savedUnit)
     } catch (error) {
         console.log('Error creating unit:', error.message);
@@ -77,7 +77,7 @@ router.put('/:id', async (req, res) => {
             return res.status(404).json({message: 'Unit not found'});
         }
 
-        console.log('Unit updated:', unit.unitnumber);
+        console.log('Unit updated:', unit.unitNumber);
         res.json(unit);
     } catch (error) {
         console.log('Error updating unit:', error.message);
@@ -99,7 +99,7 @@ router.put('/:id', async (req, res) => {
             return res.status(404).json({message: 'Unit not found'});
         }
 
-        console.log('Unit deleted:', unit.unitnumber);
+        console.log('Unit deleted:', unit.unitNumber);
         res.json({ message: 'Unit delted successfully'});
     } catch (error) {
         console.log('Error deleting unit:', error.message);

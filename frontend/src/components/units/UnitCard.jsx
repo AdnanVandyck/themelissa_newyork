@@ -15,7 +15,7 @@ const UnitCard = ({ unit }) => {
         <div style={{ position: 'relative'}}>
             <img 
             src={unit.image || 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'}
-            alt={unit.unitnumber}
+            alt={unit.unitNumber}
             style={{
             width: '100%',
             height: '200px',
@@ -52,7 +52,7 @@ const UnitCard = ({ unit }) => {
         </div>
 
       <div style={{ padding: '1.5rem'}}>
-        <h4 className="unit-title">{unit.unitnumber}</h4>
+        <h4 className="unit-title">{unit.unitNumber}</h4>
         <p className="regular-text">{unit.bedrooms === 0 ? 'Studio' : `${unit.bedrooms} Bedrooms`}</p>
         <p className="regular-text">{unit.bathrooms} Bathroom{unit.bathrooms > 1 ? 's' : ''}</p>
         
@@ -71,7 +71,7 @@ const UnitCard = ({ unit }) => {
               marginTop: '1rem',
               cursor: 'not-allowed'
             }}
-            onClick={() => alert(`${unit.unitnumber} is currently not available`)}
+            onClick={() => alert(`${unit.unitNumber} is currently not available`)}
           >
             Not Available
           </button>

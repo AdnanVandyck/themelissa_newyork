@@ -3,7 +3,7 @@ import UnitCard from '../components/units/UnitCard'
 
 const sampleUnits = [{
   _id: 1,
-  unitnumber: '3A',
+  unitNumber: '3A',
   price: 3500,
   bedrooms: 0,
   bathrooms: 1,
@@ -12,7 +12,7 @@ const sampleUnits = [{
 },
 {
   _id: 2,
-  unitnumber: '2A',
+  unitNumber: '2A',
   price: 4500,
   bedrooms: 2,
   bathrooms: 1.5,
@@ -21,7 +21,7 @@ const sampleUnits = [{
 },
 {
   _id: 3,
-  unitnumber: '5A',
+  unitNumber: '5A',
   price: 6600,
   bedrooms: 1,
   bathrooms: 1,
@@ -30,7 +30,7 @@ const sampleUnits = [{
 },
 {
   _id: 4,
-  unitnumber: '4B',
+  unitNumber: '4B',
   price: 6500,
   bedrooms: 2,
   bathrooms: 2,

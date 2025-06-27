@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 
 const UnitForm = ({ isOpen, onClose, unit, onSave }) => {
   const [formData, setFormData] = useState({
-    unitnumber: unit?.unitnumber || '',
+    unitNumber: unit?.unitNumber || '',
     price: unit?.price || '',
     bedrooms: unit?.bedrooms || 0,
     bathrooms: unit?.bathrooms || 1,
@@ -47,7 +47,7 @@ const UnitForm = ({ isOpen, onClose, unit, onSave }) => {
           borderBottom: '1px solid #dee2e6'
         }}>
           <h2 style={{ margin: 0 }}>
-            {unit ? `Edit Unit ${unit.unitnumber}` : 'Add New Unit'}
+            {unit ? `Edit Unit ${unit.unitNumber}` : 'Add New Unit'}
           </h2>
           <button
             onClick={onClose}
@@ -77,8 +77,8 @@ const UnitForm = ({ isOpen, onClose, unit, onSave }) => {
             </label>
             <input
                 type="text"
-                value={formData.unitnumber}
-                onChange={(e) => setFormData({...formData, unitnumber: e.target.value})}
+                value={formData.unitNumber}
+                onChange={(e) => setFormData({...formData, unitNumber: e.target.value})}
                 placeholder="e.g., 3A, 5B, 12A"
                 required
                 style={{

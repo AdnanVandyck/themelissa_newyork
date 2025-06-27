@@ -4,7 +4,7 @@ import UnitForm from '../components/admin/UnitForm'
 
 const initialUnits = [{
   _id: 1,
-  unitnumber: '3A',
+  unitNumber: '3A',
   price: 3500,
   bedrooms: 0,
   bathrooms: 1,
@@ -13,7 +13,7 @@ const initialUnits = [{
 },
 {
   _id: 2,
-  unitnumber: '2A',
+  unitNumber: '2A',
   price: 4500,
   bedrooms: 2,
   bathrooms: 1.5,
@@ -22,7 +22,7 @@ const initialUnits = [{
 },
 {
   _id: 3,
-  unitnumber: '5A',
+  unitNumber: '5A',
   price: 6600,
   bedrooms: 1,
   bathrooms: 1,
@@ -31,7 +31,7 @@ const initialUnits = [{
 },
 {
   _id: 4,
-  unitnumber: '4B',
+  unitNumber: '4B',
   price: 6500,
   bedrooms: 2,
   bathrooms: 2,
@@ -62,7 +62,7 @@ const AdminDashboard = () => {
   
   const handleDeleteUnit = (unitId) => {
     const unit = units.find(u => u._id === unitId)
-    if (confirm(`Are you sure you want to delete ${unit.unitnumber}?`)) {
+    if (confirm(`Are you sure you want to delete ${unit.unitNumber}?`)) {
       setUnits(units.filter(u => u._id !== unitId))
     }
   }
@@ -82,11 +82,45 @@ const AdminDashboard = () => {
     setEditingUnit(null)
   }
 
-  const handleSaveUnit = (unitData) => {
-    console.log('Saving unit:', unitData)
-    // We'll implement this in the next step
-    setIsFormOpen(false)
+const handleSaveUnit = (unitData) => {
+  if (editingUnit) {
+    // Editing existing unit
+    setUnits(units.map(unit => 
+      unit._id === editingUnit._id 
+        ? { 
+            ...unit, 
+            unitNumber: unitData.unitNumber,
+            price: parseInt(unitData.price),
+            bedrooms: parseInt(unitData.bedrooms),
+            bathrooms: parseFloat(unitData.bathrooms),
+            sqft: parseInt(unitData.sqft),
+            available: unitData.available,
+            title: `${unitData.bedrooms === 0 ? 'Studio' : `${unitData.bedrooms} Bedroom`} - Unit ${unitData.unitNumber}`
+          }
+        : unit
+    ))
+    alert(`Unit ${unitData.unitNumber} updated successfully!`)
+  } else {
+    // Adding new unit
+    const newUnit = {
+      _id: Date.now().toString(), // Simple ID generation
+      unitNumber: unitData.unitNumber,
+      title: `${unitData.bedrooms === 0 ? 'Studio' : `${unitData.bedrooms} Bedroom`} - Unit ${unitData.unitNumber}`,
+      price: parseInt(unitData.price),
+      bedrooms: parseInt(unitData.bedrooms),
+      bathrooms: parseFloat(unitData.bathrooms),
+      sqft: parseInt(unitData.sqft),
+      available: unitData.available,
+      image: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+      description: `Beautiful ${unitData.bedrooms === 0 ? 'studio' : `${unitData.bedrooms}-bedroom`} apartment in The Melissa NYC.`,
+      amenities: ['Modern Kitchen', 'Hardwood Floors', 'In-Unit Laundry', 'High Ceilings']
+    }
+    setUnits([...units, newUnit])
+    alert(`Unit ${unitData.unitNumber} added successfully!`)
   }
+  setIsFormOpen(false)
+  setEditingUnit(null)
+}
 
   return (
     <div style={{ padding: '2rem' }}>
@@ -235,7 +269,7 @@ const AdminDashboard = () => {
                     <h4>No Units Found</h4>
                     <p>There are currently no units in the system.</p>
                     <button
-                        onClick={() => alert('Add Unit feature coming soon!')}
+                        onClick={handleAddUnit}
                         style={{
                         backgroundColor: '#28a745',
                         color: 'white',
@@ -259,7 +293,7 @@ const AdminDashboard = () => {
                 {units.map((unit) => (
                 <tr key={unit._id} style={{ borderBottom: '1px solid #dee2e6' }}>
                     <td style={{ padding: '1rem' }}>
-                    <strong>Unit {unit.unitnumber}</strong>
+                    <strong>Unit {unit.unitNumber}</strong>
                     </td>
                     <td style={{ padding: '1rem' }}>
                     ${unit.price}/mo
