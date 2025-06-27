@@ -1,9 +1,16 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 
-
 const UnitCard = ({ unit }) => {
-    return (
+  const formatPrice = (price) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+    }).format(price)
+  }
+
+  return (
     <div style={{
       border: '2px solid #e8e8e8',
       borderRadius: '12px',
@@ -14,8 +21,8 @@ const UnitCard = ({ unit }) => {
     }}>
         <div style={{ position: 'relative'}}>
             <img 
-            src={unit.image || 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'}
-            alt={unit.unitNumber}
+            src={unit.imageURL || 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'}
+            alt={`Unit ${unit.unitNumber}`}
             style={{
             width: '100%',
             height: '200px',
@@ -32,31 +39,36 @@ const UnitCard = ({ unit }) => {
                 borderRadius: '20px',
                 fontWeight: 'bold'
             }}>
-                ${unit.price}/mo
+                {formatPrice(unit.price)}/mo
             </div>
             
-            {/* Clean badge logic */}
             <div style={{
                 position: 'absolute',
                 top: '10px',
                 right: '10px',
-                backgroundColor: unit.available === false ? '#e74c3c' : '#27ae60',  
+                backgroundColor: unit.available === false ? '#e74c3c' : '#27ae60',
                 color: 'white',
                 padding: '0.3rem 0.8rem',
                 borderRadius: '15px',
                 fontSize: '0.8rem',
                 fontWeight: 'bold'
             }}>
-                {unit.available === false ? 'Not Available' : 'Available'}  
+                {unit.available === false ? 'Not Available' : 'Available'}
             </div>
         </div>
 
       <div style={{ padding: '1.5rem'}}>
-        <h4 className="unit-title">{unit.unitNumber}</h4>
+        <h4 className="unit-title">Unit {unit.unitNumber}</h4>
         <p className="regular-text">{unit.bedrooms === 0 ? 'Studio' : `${unit.bedrooms} Bedrooms`}</p>
         <p className="regular-text">{unit.bathrooms} Bathroom{unit.bathrooms > 1 ? 's' : ''}</p>
+        <p className="regular-text" style={{ 
+          fontSize: '0.9rem', 
+          color: '#7f8c8d',
+          lineHeight: '1.4'
+        }}>
+          {unit.description?.substring(0, 100)}...
+        </p>
         
-         {/* Update button to use Link instead of onClick */}
         {unit.available === false ? (
           <button 
             style={{
@@ -71,7 +83,7 @@ const UnitCard = ({ unit }) => {
               marginTop: '1rem',
               cursor: 'not-allowed'
             }}
-            onClick={() => alert(`${unit.unitNumber} is currently not available`)}
+            onClick={() => alert(`Unit ${unit.unitNumber} is currently not available`)}
           >
             Not Available
           </button>
