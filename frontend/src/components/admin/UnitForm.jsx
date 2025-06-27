@@ -65,8 +65,161 @@ const UnitForm = ({ isOpen, onClose, unit, onSave }) => {
 
         {/* Modal Body */}
         <div>
-          <p>Form fields will go here...</p>
-          <p>Unit: {unit ? unit.unitnumber : 'New'}</p>
+        <form onSubmit={(e) => e.preventDefault()}>
+            {/* Unit Number */}
+            <div style={{ marginBottom: '1rem' }}>
+            <label style={{ 
+                display: 'block', 
+                marginBottom: '0.5rem', 
+                fontWeight: 'bold' 
+            }}>
+                Unit Number
+            </label>
+            <input
+                type="text"
+                value={formData.unitnumber}
+                onChange={(e) => setFormData({...formData, unitnumber: e.target.value})}
+                placeholder="e.g., 3A, 5B, 12A"
+                required
+                style={{
+                width: '100%',
+                padding: '0.75rem',
+                border: '1px solid #ddd',
+                borderRadius: '4px',
+                fontSize: '1rem'
+                }}
+            />
+            </div>
+
+            {/* Price */}
+            <div style={{ marginBottom: '1rem' }}>
+            <label style={{ 
+                display: 'block', 
+                marginBottom: '0.5rem', 
+                fontWeight: 'bold' 
+            }}>
+                Monthly Rent ($)
+            </label>
+            <input
+                type="number"
+                value={formData.price}
+                onChange={(e) => setFormData({...formData, price: e.target.value})}
+                placeholder="e.g., 3500"
+                required
+                style={{
+                width: '100%',
+                padding: '0.75rem',
+                border: '1px solid #ddd',
+                borderRadius: '4px',
+                fontSize: '1rem'
+                }}
+            />
+            </div>
+
+            {/* Bedrooms and Bathrooms Row */}
+            <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: '1fr 1fr', 
+            gap: '1rem',
+            marginBottom: '1rem'
+            }}>
+            <div>
+                <label style={{ 
+                display: 'block', 
+                marginBottom: '0.5rem', 
+                fontWeight: 'bold' 
+                }}>
+                Bedrooms
+                </label>
+                <select
+                value={formData.bedrooms}
+                onChange={(e) => setFormData({...formData, bedrooms: parseInt(e.target.value)})}
+                style={{
+                    width: '100%',
+                    padding: '0.75rem',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    fontSize: '1rem'
+                }}
+                >
+                <option value={0}>Studio</option>
+                <option value={1}>1 Bedroom</option>
+                <option value={2}>2 Bedrooms</option>
+                <option value={3}>3 Bedrooms</option>
+                <option value={4}>4 Bedrooms</option>
+                </select>
+            </div>
+
+            <div>
+                <label style={{ 
+                display: 'block', 
+                marginBottom: '0.5rem', 
+                fontWeight: 'bold' 
+                }}>
+                Bathrooms
+                </label>
+                <select
+                value={formData.bathrooms}
+                onChange={(e) => setFormData({...formData, bathrooms: parseFloat(e.target.value)})}
+                style={{
+                    width: '100%',
+                    padding: '0.75rem',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    fontSize: '1rem'
+                }}
+                >
+                <option value={1}>1 Bathroom</option>
+                <option value={1.5}>1.5 Bathrooms</option>
+                <option value={2}>2 Bathrooms</option>
+                <option value={2.5}>2.5 Bathrooms</option>
+                <option value={3}>3 Bathrooms</option>
+                </select>
+            </div>
+            </div>
+
+            {/* Square Feet */}
+            {/* <div style={{ marginBottom: '1rem' }}>
+            <label style={{ 
+                display: 'block', 
+                marginBottom: '0.5rem', 
+                fontWeight: 'bold' 
+            }}>
+                Square Feet
+            </label>
+            <input
+                type="number"
+                value={formData.sqft}
+                onChange={(e) => setFormData({...formData, sqft: e.target.value})}
+                placeholder="e.g., 450"
+                required
+                style={{
+                width: '100%',
+                padding: '0.75rem',
+                border: '1px solid #ddd',
+                borderRadius: '4px',
+                fontSize: '1rem'
+                }}
+            />
+            </div> */}
+
+            {/* Available Checkbox */}
+            <div style={{ marginBottom: '1rem' }}>
+            <label style={{ 
+                display: 'flex', 
+                alignItems: 'center',
+                cursor: 'pointer'
+            }}>
+                <input
+                type="checkbox"
+                checked={formData.available}
+                onChange={(e) => setFormData({...formData, available: e.target.checked})}
+                style={{ marginRight: '0.5rem' }}
+                />
+                <span style={{ fontWeight: 'bold' }}>Unit is available for rent</span>
+            </label>
+            </div>
+        </form>
         </div>
 
         {/* Modal Footer */}
