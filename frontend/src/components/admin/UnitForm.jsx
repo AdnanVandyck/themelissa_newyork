@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { unitAPI } from '../../services/api'
 
 const UnitForm = ({ isOpen, onClose, unit, onSave }) => {
   const [formData, setFormData] = useState({
@@ -10,6 +11,10 @@ const UnitForm = ({ isOpen, onClose, unit, onSave }) => {
     imageURL: '',
     available: true
   })
+  
+  const [imageFile, setImageFile] = useState(null) // ← Add image file state
+  const [imagePreview, setImagePreview] = useState('') // ← Add image preview state
+  const [uploading, setUploading] = useState(false) // ← Add upload loading state
 
   // Update form data when modal opens or unit changes
   useEffect(() => {
@@ -25,6 +30,7 @@ const UnitForm = ({ isOpen, onClose, unit, onSave }) => {
           imageURL: unit.imageURL || '',
           available: unit.available !== undefined ? unit.available : true
         })
+        setImagePreview(unit.imageURL || '')
       } else {
         // Adding new unit - reset to empty
         setFormData({
@@ -36,16 +42,82 @@ const UnitForm = ({ isOpen, onClose, unit, onSave }) => {
           imageURL: '',
           available: true
         })
+        setImagePreview('')
       }
+      // Reset file input
+      setImageFile(null)
     }
   }, [isOpen, unit])
+
+  // Handle image file selection
+  const handleImageChange = (e) => {
+    const file = e.target.files[0]
+    if (file) {
+      setImageFile(file)
+      
+      // Create preview URL
+      const previewUrl = URL.createObjectURL(file)
+      setImagePreview(previewUrl)
+      
+      console.log('Image file selected:', file.name)
+    }
+  }
+
+  // Upload image to backend
+  const handleImageUpload = async () => {
+    if (!imageFile) return formData.imageURL
+
+    try {
+      setUploading(true)
+      console.log('Uploading image:', imageFile.name)
+      
+      const response = await unitAPI.uploadImage(imageFile)
+      const imageUrl = `http://localhost:5000${response.data.imageUrl}`
+      
+      console.log('Image uploaded successfully:', imageUrl)
+      
+      // Update form data with new image URL
+      setFormData(prev => ({ ...prev, imageURL: imageUrl }))
+      
+      return imageUrl
+    } catch (error) {
+      console.error('Error uploading image:', error)
+      alert('Failed to upload image. Please try again.')
+      return formData.imageURL
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  // Handle form submission
+  const handleSubmit = async () => {
+    try {
+      let finalImageURL = formData.imageURL
+
+      // Upload image if a new file was selected
+      if (imageFile) {
+        finalImageURL = await handleImageUpload()
+      }
+
+      // Save unit data with final image URL
+      const unitData = {
+        ...formData,
+        imageURL: finalImageURL
+      }
+
+      onSave(unitData)
+    } catch (error) {
+      console.error('Error saving unit:', error)
+    }
+  }
 
   // Form validation
   const isFormValid = () => {
     return formData.unitNumber.trim() !== '' && 
            formData.description.trim() !== '' &&
            formData.price !== '' && 
-           parseInt(formData.price) > 0
+           parseInt(formData.price) > 0 &&
+           !uploading // Don't allow submit while uploading
   }
 
   if (!isOpen) return null
@@ -70,7 +142,7 @@ const UnitForm = ({ isOpen, onClose, unit, onSave }) => {
         borderRadius: '8px',
         padding: '2rem',
         width: '90%',
-        maxWidth: '500px',
+        maxWidth: '600px', // ← Made wider for image upload
         maxHeight: '90vh',
         overflow: 'auto',
         boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)'
@@ -248,19 +320,74 @@ const UnitForm = ({ isOpen, onClose, unit, onSave }) => {
               </div>
             </div>
 
-            {/* Image URL */}
+            {/* Image Upload Section */}
             <div style={{ marginBottom: '1rem' }}>
               <label style={{ 
                 display: 'block', 
                 marginBottom: '0.5rem', 
                 fontWeight: 'bold' 
               }}>
-                Image URL (Optional)
+                Unit Image
+              </label>
+              
+              {/* File Input */}
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  border: '1px solid #ddd',
+                  borderRadius: '4px',
+                  fontSize: '1rem',
+                  marginBottom: '1rem'
+                }}
+              />
+              
+              {/* Image Preview */}
+              {imagePreview && (
+                <div style={{ marginBottom: '1rem' }}>
+                  <p style={{ marginBottom: '0.5rem', fontWeight: 'bold', fontSize: '0.9rem' }}>
+                    Preview:
+                  </p>
+                  <img 
+                    src={imagePreview} 
+                    alt="Preview"
+                    style={{
+                      width: '100%',
+                      maxWidth: '300px',
+                      height: '200px',
+                      objectFit: 'cover',
+                      borderRadius: '4px',
+                      border: '1px solid #ddd'
+                    }}
+                  />
+                </div>
+              )}
+              
+              <small style={{ color: '#6c757d' }}>
+                Select an image file (max 5MB). Supported formats: JPG, PNG, GIF
+              </small>
+            </div>
+
+            {/* Manual Image URL (Optional) */}
+            <div style={{ marginBottom: '1rem' }}>
+              <label style={{ 
+                display: 'block', 
+                marginBottom: '0.5rem', 
+                fontWeight: 'bold' 
+              }}>
+                Or Image URL (Optional)
               </label>
               <input
                 type="url"
                 value={formData.imageURL}
-                onChange={(e) => setFormData({...formData, imageURL: e.target.value})}
+                onChange={(e) => {
+                  setFormData({...formData, imageURL: e.target.value})
+                  setImagePreview(e.target.value)
+                  setImageFile(null) // Clear file if URL is entered
+                }}
                 placeholder="https://example.com/image.jpg"
                 style={{
                   width: '100%',
@@ -271,28 +398,8 @@ const UnitForm = ({ isOpen, onClose, unit, onSave }) => {
                 }}
               />
               <small style={{ color: '#6c757d' }}>
-                Leave empty to use default image
+                Enter image URL if you prefer not to upload a file
               </small>
-              
-              {/* Image Preview */}
-              {formData.imageURL && (
-                <div style={{ marginTop: '0.5rem' }}>
-                  <img 
-                    src={formData.imageURL} 
-                    alt="Preview"
-                    style={{
-                      width: '100px',
-                      height: '60px',
-                      objectFit: 'cover',
-                      borderRadius: '4px',
-                      border: '1px solid #ddd'
-                    }}
-                    onError={(e) => {
-                      e.target.style.display = 'none'
-                    }}
-                  />
-                </div>
-              )}
             </div>
 
             {/* Available Checkbox */}
@@ -337,7 +444,7 @@ const UnitForm = ({ isOpen, onClose, unit, onSave }) => {
             Cancel
           </button>
           <button
-            onClick={() => onSave(formData)}
+            onClick={handleSubmit}
             disabled={!isFormValid()}
             style={{
               backgroundColor: isFormValid() ? '#28a745' : '#95a5a6',
@@ -348,7 +455,7 @@ const UnitForm = ({ isOpen, onClose, unit, onSave }) => {
               cursor: isFormValid() ? 'pointer' : 'not-allowed'
             }}
           >
-            Save Unit
+            {uploading ? 'Uploading...' : 'Save Unit'}
           </button>
         </div>
       </div>

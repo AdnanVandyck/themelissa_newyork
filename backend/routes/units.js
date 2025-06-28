@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const Unit = require('../models/Unit');  // ← Fixed: removed .model.js
+const Unit = require('../models/Unit');
+const upload = require('../middleware/upload');  
 
 // Get all units (available AND unavailable for admin)
 router.get('/', async (req, res) => {
@@ -58,6 +59,31 @@ router.post('/', async (req, res) => {
             error: error.message
         })
     }
+});
+
+// POST /api/units/upload-image - Upload image
+router.post('/upload-image', upload.single('image'), (req, res) => {
+  try {
+    console.log('POST /api/units/upload-image - Image upload request');
+    
+    if (!req.file) {
+      return res.status(400).json({ message: 'No image file provided' });
+    }
+
+    console.log('File uploaded:', req.file.filename);
+    
+    // Return the file URL that frontend can use
+    const imageUrl = `/uploads/${req.file.filename}`;
+    
+    res.json({ 
+      message: 'Image uploaded successfully',
+      imageUrl: imageUrl,
+      filename: req.file.filename
+    });
+  } catch (error) {
+    console.error('Error uploading image:', error);
+    res.status(500).json({ message: 'Error uploading image' });
+  }
 });
 
 // PUT update unit
