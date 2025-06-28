@@ -1,69 +1,80 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import UnitForm from '../components/admin/UnitForm'
-
-const initialUnits = [{
-  _id: 1,
-  unitNumber: '3A',
-  price: 3500,
-  bedrooms: 0,
-  bathrooms: 1,
-  available: true,
-  image: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
-},
-{
-  _id: 2,
-  unitNumber: '2A',
-  price: 4500,
-  bedrooms: 2,
-  bathrooms: 1.5,
-  available: true,
-  image: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
-},
-{
-  _id: 3,
-  unitNumber: '5A',
-  price: 6600,
-  bedrooms: 1,
-  bathrooms: 1,
-  available: true,
-  image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
-},
-{
-  _id: 4,
-  unitNumber: '4B',
-  price: 6500,
-  bedrooms: 2,
-  bathrooms: 2,
-  available: false,
-  image: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
-}
-]
+import { unitAPI } from '../services/api'
 
 const AdminDashboard = () => {
-    const [units, setUnits] = useState(initialUnits)
-    const [isFormOpen, setIsFormOpen] = useState(false)
-    const [editingUnit, setEditingUnit] = useState(null)
+  const [units, setUnits] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [isFormOpen, setIsFormOpen] = useState(false)
+  const [editingUnit, setEditingUnit] = useState(null)
+  
+  // Fetch units from backend on component mount
+  useEffect(() => {
+    fetchUnits()
+  }, [])
 
+  const fetchUnits = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      console.log('Admin: Fetching units from backend...')
+      
+      const response = await unitAPI.getAll()
+      console.log('Admin: Units fetched:', response.data)
+      setUnits(response.data)
+    } catch (err) {
+      console.error('Admin: Error fetching units:', err)
+      setError(`Failed to fetch units: ${err.message}`)
+    } finally {
+      setLoading(false)
+    }
+  }
 
-    const handleLogout = () => {
+  const handleLogout = () => {
     if (confirm('Are you sure you want to logout?')) {
       window.location.href = '/admin/login'
     }
   }
-
-    const handleToggleAvailability = (unitId) => {
-    setUnits(units.map(unit => 
-      unit._id === unitId 
-        ? { ...unit, available: !unit.available }
-        : unit
-    ))
+  
+  const handleToggleAvailability = async (unitId) => {
+    try {
+      const unit = units.find(u => u._id === unitId)
+      const updatedData = { 
+        ...unit, 
+        available: !unit.available 
+      }
+      
+      console.log('Toggling availability for unit:', unitId, 'to:', !unit.available)
+      const response = await unitAPI.update(unitId, updatedData)
+      
+      // Update local state with response from backend
+      setUnits(units.map(u => 
+        u._id === unitId ? response.data : u
+      ))
+      
+      console.log('Availability updated successfully')
+    } catch (err) {
+      console.error('Error toggling availability:', err)
+      alert(`Failed to update availability: ${err.response?.data?.message || err.message}`)
+    }
   }
   
-  const handleDeleteUnit = (unitId) => {
+  const handleDeleteUnit = async (unitId) => {
     const unit = units.find(u => u._id === unitId)
-    if (confirm(`Are you sure you want to delete ${unit.unitNumber}?`)) {
-      setUnits(units.filter(u => u._id !== unitId))
+    if (confirm(`Are you sure you want to delete Unit ${unit.unitNumber}?`)) {
+      try {
+        console.log('Deleting unit:', unitId)
+        await unitAPI.delete(unitId)
+        
+        // Update local state
+        setUnits(units.filter(u => u._id !== unitId))
+        alert(`Unit ${unit.unitNumber} deleted successfully!`)
+      } catch (err) {
+        console.error('Error deleting unit:', err)
+        alert(`Failed to delete unit: ${err.response?.data?.message || err.message}`)
+      }
     }
   }
 
@@ -73,6 +84,7 @@ const AdminDashboard = () => {
   }
 
   const handleEditUnit = (unit) => {
+    console.log('Editing unit:', unit)
     setEditingUnit(unit)
     setIsFormOpen(true)
   }
@@ -82,46 +94,96 @@ const AdminDashboard = () => {
     setEditingUnit(null)
   }
 
-const handleSaveUnit = (unitData) => {
-  if (editingUnit) {
-    // Editing existing unit
-    setUnits(units.map(unit => 
-      unit._id === editingUnit._id 
-        ? { 
-            ...unit, 
-            unitNumber: unitData.unitNumber,
-            price: parseInt(unitData.price),
-            bedrooms: parseInt(unitData.bedrooms),
-            bathrooms: parseFloat(unitData.bathrooms),
-            sqft: parseInt(unitData.sqft),
-            available: unitData.available,
-            title: `${unitData.bedrooms === 0 ? 'Studio' : `${unitData.bedrooms} Bedroom`} - Unit ${unitData.unitNumber}`
-          }
-        : unit
-    ))
-    alert(`Unit ${unitData.unitNumber} updated successfully!`)
-  } else {
-    // Adding new unit
-    const newUnit = {
-      _id: Date.now().toString(), // Simple ID generation
-      unitNumber: unitData.unitNumber,
-      title: `${unitData.bedrooms === 0 ? 'Studio' : `${unitData.bedrooms} Bedroom`} - Unit ${unitData.unitNumber}`,
-      price: parseInt(unitData.price),
-      bedrooms: parseInt(unitData.bedrooms),
-      bathrooms: parseFloat(unitData.bathrooms),
-      sqft: parseInt(unitData.sqft),
-      available: unitData.available,
-      image: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-      description: `Beautiful ${unitData.bedrooms === 0 ? 'studio' : `${unitData.bedrooms}-bedroom`} apartment in The Melissa NYC.`,
-      amenities: ['Modern Kitchen', 'Hardwood Floors', 'In-Unit Laundry', 'High Ceilings']
+  const handleSaveUnit = async (unitData) => {
+    try {
+      if (editingUnit) {
+        // Editing existing unit
+        console.log('Updating unit:', editingUnit._id, unitData)
+        const response = await unitAPI.update(editingUnit._id, unitData)
+        
+        // Update local state with response from backend
+        setUnits(units.map(unit => 
+          unit._id === editingUnit._id ? response.data : unit
+        ))
+        alert(`Unit ${unitData.unitNumber} updated successfully!`)
+      } else {
+        // Adding new unit
+        console.log('Creating new unit:', unitData)
+        const response = await unitAPI.create(unitData)
+        
+        // Add new unit to local state
+        setUnits([response.data, ...units])
+        alert(`Unit ${unitData.unitNumber} added successfully!`)
+      }
+      setIsFormOpen(false)
+      setEditingUnit(null)
+    } catch (err) {
+      console.error('Error saving unit:', err)
+      alert(`Failed to save unit: ${err.response?.data?.message || err.message}`)
     }
-    setUnits([...units, newUnit])
-    alert(`Unit ${unitData.unitNumber} added successfully!`)
   }
-  setIsFormOpen(false)
-  setEditingUnit(null)
-}
 
+  // Show loading state
+  if (loading) {
+    return (
+      <div style={{ padding: '2rem', textAlign: 'center' }}>
+        <h2>Loading dashboard...</h2>
+        <div style={{ 
+          margin: '2rem auto',
+          width: '50px',
+          height: '50px',
+          border: '3px solid #f3f3f3',
+          borderTop: '3px solid #3498db',
+          borderRadius: '50%',
+          animation: 'spin 1s linear infinite'
+        }}></div>
+        <style>{`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}</style>
+        <p style={{ color: '#7f8c8d' }}>Connecting to backend...</p>
+      </div>
+    )
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div style={{ padding: '2rem', textAlign: 'center' }}>
+        <h2>Dashboard Error</h2>
+        <p style={{ color: '#e74c3c', marginBottom: '2rem' }}>{error}</p>
+        <button 
+          onClick={fetchUnits}
+          style={{
+            backgroundColor: '#3498db',
+            color: 'white',
+            border: 'none',
+            padding: '0.75rem 1.5rem',
+            borderRadius: '5px',
+            cursor: 'pointer',
+            marginRight: '1rem'
+          }}
+        >
+          Retry Connection
+        </button>
+        <Link to="/admin/login">
+          <button style={{
+            backgroundColor: '#6c757d',
+            color: 'white',
+            border: 'none',
+            padding: '0.75rem 1.5rem',
+            borderRadius: '5px',
+            cursor: 'pointer'
+          }}>
+            Back to Login
+          </button>
+        </Link>
+      </div>
+    )
+  }
+  
   return (
     <div style={{ padding: '2rem' }}>
       {/* Header Section */}
@@ -136,7 +198,7 @@ const handleSaveUnit = (unitData) => {
         <div>
           <h1 className="main-heading" style={{ margin: 0 }}>Admin Dashboard</h1>
           <p style={{ color: '#7f8c8d', margin: 0 }}>
-            Welcome back! Manage all units for The Melissa NYC.
+            Connected to backend • {units.length} total units in database
           </p>
         </div>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -185,7 +247,7 @@ const handleSaveUnit = (unitData) => {
         </div>
       </div>
       
-      {/* Quick Stats  */}
+      {/* Quick Stats */}
       <div style={{ 
         display: 'grid', 
         gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', 
@@ -221,7 +283,7 @@ const handleSaveUnit = (unitData) => {
         </div>
       </div>
       
-      {/* Units Table  */}
+      {/* Units Table */}
       <div style={{ 
         backgroundColor: 'white', 
         borderRadius: '8px', 
@@ -233,14 +295,14 @@ const handleSaveUnit = (unitData) => {
           backgroundColor: '#f8f9fa', 
           borderBottom: '1px solid #dee2e6' 
         }}>
-          <h2 style={{ margin: 0 }}>Unit Management</h2>
+          <h2 style={{ margin: 0 }}>Unit Management (Live Database)</h2>
         </div>
         
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ backgroundColor: '#f8f9fa' }}>
               <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '1px solid #dee2e6' }}>
-                Unit
+                Unit Number
               </th>
               <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '1px solid #dee2e6' }}>
                 Price
@@ -256,21 +318,21 @@ const handleSaveUnit = (unitData) => {
               </th>
             </tr>
           </thead>
-            {units.length === 0 ? (
-            // Empty State
+          
+          {units.length === 0 ? (
             <tbody>
-                <tr>
+              <tr>
                 <td colSpan="5" style={{ 
-                    padding: '3rem', 
-                    textAlign: 'center',
-                    color: '#6c757d'
+                  padding: '3rem', 
+                  textAlign: 'center',
+                  color: '#6c757d'
                 }}>
-                    <div>
-                    <h4>No Units Found</h4>
-                    <p>There are currently no units in the system.</p>
+                  <div>
+                    <h4>No Units in Database</h4>
+                    <p>The backend is connected, but there are no units yet.</p>
                     <button
-                        onClick={handleAddUnit}
-                        style={{
+                      onClick={handleAddUnit}
+                      style={{
                         backgroundColor: '#28a745',
                         color: 'white',
                         border: 'none',
@@ -279,32 +341,31 @@ const handleSaveUnit = (unitData) => {
                         fontSize: '0.9rem',
                         fontWeight: 'bold',
                         cursor: 'pointer'
-                        }}
+                      }}
                     >
-                        + Add Your First Unit
+                      + Add Your First Unit
                     </button>
-                    </div>
+                  </div>
                 </td>
-                </tr>
+              </tr>
             </tbody>
-            ) : (
-            // Normal State - Show Units
+          ) : (
             <tbody>
-                {units.map((unit) => (
+              {units.map((unit) => (
                 <tr key={unit._id} style={{ borderBottom: '1px solid #dee2e6' }}>
-                    <td style={{ padding: '1rem' }}>
+                  <td style={{ padding: '1rem' }}>
                     <strong>Unit {unit.unitNumber}</strong>
-                    </td>
-                    <td style={{ padding: '1rem' }}>
+                  </td>
+                  <td style={{ padding: '1rem' }}>
                     ${unit.price}/mo
-                    </td>
-                    <td style={{ padding: '1rem' }}>
+                  </td>
+                  <td style={{ padding: '1rem' }}>
                     {unit.bedrooms === 0 ? 'Studio' : `${unit.bedrooms}bd`} / {unit.bathrooms}ba
-                    </td>
-                    <td style={{ padding: '1rem' }}>
+                  </td>
+                  <td style={{ padding: '1rem' }}>
                     <button
-                        onClick={() => handleToggleAvailability(unit._id)}
-                        style={{
+                      onClick={() => handleToggleAvailability(unit._id)}
+                      style={{
                         padding: '0.25rem 0.5rem',
                         borderRadius: '12px',
                         fontSize: '0.8rem',
@@ -313,14 +374,14 @@ const handleSaveUnit = (unitData) => {
                         color: unit.available ? '#155724' : '#721c24',
                         border: 'none',
                         cursor: 'pointer'
-                        }}
+                      }}
                     >
-                        {unit.available ? 'Available' : 'Not Available'}
+                      {unit.available ? 'Available' : 'Not Available'}
                     </button>
-                    </td>
-                    <td style={{ padding: '1rem' }}>
+                  </td>
+                  <td style={{ padding: '1rem' }}>
                     <Link to={`/unit/${unit._id}`} style={{ textDecoration: 'none' }}>
-                        <button style={{
+                      <button style={{
                         backgroundColor: '#17a2b8',
                         color: 'white',
                         border: 'none',
@@ -329,13 +390,13 @@ const handleSaveUnit = (unitData) => {
                         fontSize: '0.8rem',
                         cursor: 'pointer',
                         marginRight: '0.5rem'
-                        }}>
+                      }}>
                         View
-                        </button>
+                      </button>
                     </Link>
                     <button 
-                        onClick={() => handleEditUnit(unit)}
-                        style={{
+                      onClick={() => handleEditUnit(unit)}
+                      style={{
                         backgroundColor: '#ffc107',
                         color: 'black',
                         border: 'none',
@@ -344,13 +405,13 @@ const handleSaveUnit = (unitData) => {
                         fontSize: '0.8rem',
                         cursor: 'pointer',
                         marginRight: '0.5rem'
-                        }}
+                      }}
                     >
-                        Edit
+                      Edit
                     </button>
                     <button 
-                        onClick={() => handleDeleteUnit(unit._id)}
-                        style={{
+                      onClick={() => handleDeleteUnit(unit._id)}
+                      style={{
                         backgroundColor: '#dc3545',
                         color: 'white',
                         border: 'none',
@@ -358,18 +419,20 @@ const handleSaveUnit = (unitData) => {
                         borderRadius: '3px',
                         fontSize: '0.8rem',
                         cursor: 'pointer'
-                        }}
+                      }}
                     >
-                        Delete
+                      Delete
                     </button>
-                    </td>
+                  </td>
                 </tr>
-                ))}
+              ))}
             </tbody>
-            )}
+          )}
         </table>
       </div>
-            <UnitForm
+
+      {/* Unit Form Modal */}
+      <UnitForm
         isOpen={isFormOpen}
         onClose={handleCloseForm}
         unit={editingUnit}

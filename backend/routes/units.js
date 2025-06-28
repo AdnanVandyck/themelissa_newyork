@@ -1,29 +1,27 @@
 const express = require('express');
 const router = express.Router();
-const Unit = require('../models/Unit.model.js')
+const Unit = require('../models/Unit');  // ← Fixed: removed .model.js
 
-
-// Get all available units
+// Get all units (available AND unavailable for admin)
 router.get('/', async (req, res) => {
     try {
-        console.log('Get /api/units - Fetching all properties');
-        const units = await Unit.find({ available: true }).sort({ createdAt: -1});
+        console.log('GET /api/units - Fetching all units');
+        const units = await Unit.find().sort({ createdAt: -1});  // ← Fixed: removed available filter
         console.log(`Found ${units.length} units`);
         res.json(units)
     } catch (error) {
         console.log('Error fetching units:', error.message);
         res.status(500).json({
-            message: 'Error fetching properties',
+            message: 'Error fetching units',  // ← Fixed: consistent naming
             error: error.message
         })
     }
 });
 
-
-//  Get single unit by ID
+// Get single unit by ID
 router.get('/:id', async (req, res) => {
     try {
-        console.log(`Get /api/units/${req.params.is}`);
+        console.log(`GET /api/units/${req.params.id}`);  // ← Fixed: was req.params.is
         const unit = await Unit.findById(req.params.id);
 
         if (!unit) {
@@ -42,8 +40,7 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-
-//  POST new unit
+// POST new unit
 router.post('/', async (req, res) => {
     try {
         console.log('POST /api/units - Creating new unit');
@@ -63,10 +60,10 @@ router.post('/', async (req, res) => {
     }
 });
 
-//  PUT update unit
+// PUT update unit
 router.put('/:id', async (req, res) => {
     try {
-        console.log(`PUT /api/units/${req.params.is}`);
+        console.log(`PUT /api/units/${req.params.id}`);  // ← Fixed: was req.params.is
         const unit = await Unit.findByIdAndUpdate(
             req.params.id,
             req.body,
@@ -88,11 +85,10 @@ router.put('/:id', async (req, res) => {
     }
 });
 
-
-//  DELETE unit
-router.put('/:id', async (req, res) => {
+// DELETE unit
+router.delete('/:id', async (req, res) => {  // ← Fixed: was router.put
     try {
-        console.log(`DELETE /api/units/${req.params.is}`);
+        console.log(`DELETE /api/units/${req.params.id}`);  // ← Fixed: was req.params.is
         const unit = await Unit.findByIdAndDelete(req.params.id);
 
         if (!unit) {
@@ -100,7 +96,7 @@ router.put('/:id', async (req, res) => {
         }
 
         console.log('Unit deleted:', unit.unitNumber);
-        res.json({ message: 'Unit delted successfully'});
+        res.json({ message: 'Unit deleted successfully'});  // ← Fixed: was "delted"
     } catch (error) {
         console.log('Error deleting unit:', error.message);
         res.status(500).json({
