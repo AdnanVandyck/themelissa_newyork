@@ -2,6 +2,7 @@ import axios from 'axios'
 
 // API Base URL
 const API_URL = import.meta.env.VITE_API_URL || 'https://themelissa-newyork.railway.app/api'
+console.log('🚀 API URL:', API_URL);
 
 const api = axios.create({
   baseURL: API_URL,
