@@ -7,55 +7,19 @@ const path = require('path');
 
 const app = express();
 
-// CORS Configuration - Updated for production
+// CORS Configuration for Vercel
 app.use(cors({
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    
-    const allowedOrigins = [
-      'https://www.themelissanyc.com',
-      'https://themelissanyc.com',
-      'http://localhost:3000',
-      'http://localhost:5173'
-    ];
-    
-    if (allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      console.log('CORS blocked origin:', origin);
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
-
-// Additional CORS headers (backup method to prevent Railway override)
-app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  const allowedOrigins = [
+  origin: [
+    'https://your-vercel-app.vercel.app', // We'll update this after deployment
     'https://www.themelissanyc.com',
     'https://themelissanyc.com',
     'http://localhost:3000',
     'http://localhost:5173'
-  ];
-  
-  if (allowedOrigins.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-  }
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS,PATCH');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  
-  // Handle preflight requests
-  if (req.method === 'OPTIONS') {
-    res.sendStatus(200);
-  } else {
-    next();
-  }
-});
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 // Body parser middleware
 app.use(express.json());
@@ -69,40 +33,30 @@ app.use((req, res, next) => {
 // Serve uploaded images statically
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Health check endpoint (moved before routes for priority)
-app.get('/health', (req, res) => {
+// Health check endpoint
+app.get('/api/health', (req, res) => {
   res.status(200).json({ 
     status: 'OK', 
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development',
-    cors: 'Fixed for themelissanyc.com',
-    version: '3.0'
+    platform: 'Vercel',
+    version: '4.0'
   });
 });
 
-// Routes
+// Routes (note the /api prefix for Vercel)
 app.use('/api/units', require('./routes/units'));
 app.use('/api/auth', require('./routes/auth.route'));
 app.use('/api/contacts', require('./routes/contacts'));
 app.use('/api/gallery', require('./routes/gallery'));
 
 // Root route for testing
-app.get('/', (req, res) => {
+app.get('/api', (req, res) => {
   res.json({ 
-    message: 'The Melissa Backend API is running!',
-    version: '3.0',
-    cors: 'Production ready'
+    message: 'The Melissa Backend API is running on Vercel!',
+    version: '4.0',
+    platform: 'Vercel'
   });
-});
-
-// API test endpoint
-app.get('/api/test', (req, res) => {
-    res.json({
-        message: 'API is working',
-        timestamp: new Date().toISOString(),
-        database: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected',
-        version: '3.0'
-    });
 });
 
 // Database connection
@@ -113,7 +67,7 @@ mongoose.connect(process.env.MONGODB_URI)
     })
     .catch(err => {
         console.log('❌ MongoDB connection error:', err.message);
-        process.exit(1)
+        // Don't exit on Vercel - let it retry
     });
 
 // Error handling middleware
@@ -128,14 +82,18 @@ app.use((err, req, res, next) => {
 // 404 handler
 app.use('*', (req, res) => {
   res.status(404).json({ 
-    message: 'API endpoint not found'
+    message: 'API endpoint not found',
+    availableEndpoints: ['/api/health', '/api/units', '/api/contacts', '/api/gallery']
   });
 });
 
-// Force deployment - update 3
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, '0.0.0.0', () => {
+// For Vercel, export the app instead of listening
+module.exports = app;
+
+// For local development
+if (process.env.NODE_ENV !== 'production') {
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
-    console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
-    console.log(`🔧 CORS configured for themelissanyc.com`);
-})
+  });
+}
