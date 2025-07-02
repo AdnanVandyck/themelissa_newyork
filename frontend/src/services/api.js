@@ -3,7 +3,7 @@ import axios from 'axios'
 // Vercel API URL - will be updated after deployment
 const API_URL = import.meta.env.VITE_API_URL || 
   (import.meta.env.PROD 
-    ? 'https://your-vercel-app.vercel.app/api'  // Update this after deployment
+    ? 'themelissa-newyork.vercel.app'  // Update this after deployment
     : 'http://localhost:5000/api'
   )
 

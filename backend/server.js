@@ -10,7 +10,7 @@ const app = express();
 // CORS Configuration for Vercel
 app.use(cors({
   origin: [
-    'https://your-vercel-app.vercel.app', // We'll update this after deployment
+    'themelissa-newyork.vercel.app', // We'll update this after deployment
     'https://www.themelissanyc.com',
     'https://themelissanyc.com',
     'http://localhost:3000',
