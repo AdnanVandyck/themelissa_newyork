@@ -96,7 +96,7 @@ app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
 
-module.exports = app;
+
 
 // Minimal server.js for testing (replace your backend/server.js temporarily)
 // require('dotenv').config();

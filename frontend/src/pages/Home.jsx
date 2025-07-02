@@ -195,9 +195,20 @@ const Home = () => {
                 color: '#666',
                 marginBottom: '25px'
               }}>
-                A beautifully reimagined pre-war building blending classic Upper East Side charm with sophisticated, contemporary design. All 39 residences have been thoughtfully and meticulously renovated, featuring modern condo-quality finishes and only the finest materials. Italian-made cabinetry, wide-plank oak flooring, and Carrara marble-inspired bathrooms create an elegant and timeless aesthetic.
-                Residents at The Melissa will enjoy a carefully curated collection of amenities to enrich everyday living. These include complimentary high-speed Wi-Fi, a monthly apartment cleaning service, in-unit washer/dryer, and Smart TVs in every residence.
-                While The Nelissa does not have an elevator, its six-story scale and boutique nature offer an intimate residential feel within a highly desirable Manhattan neighborhood.
+                The Melissa is a bespoke pre-war walk-up, thoughtfully reimagined to blend timeless Upper East Side elegance with modern-day minimalist sophistication. 
+                Each of the 39 residences has been meticulously renovated with condo-level craftsmanship and the highest caliber of finishes. 
+                Italian-designed cabinetry, oak floors, washer and dryers, and Carrara marble-style baths create a refined yet inviting atmosphere throughout.
+              </p>
+              <p style={{
+                fontSize: '16px',
+                lineHeight: '1.6',
+                color: '#666',
+                marginBottom: '25px'
+              }}>
+                This boutique six-story building offers an intimate residential experience, enhanced by a curated suite of lifestyle amenities: complimentary high-speed Wi-Fi, 
+                monthly housekeeping, in-unit washer/dryers, and Smart TVs in every home. 
+                While The Melissa does not feature an elevator, its graceful scale and classic walk-up design contribute to its charm—and its prime location 
+                places residents in the heart of one of Manhattan’s most coveted neighborhoods.
               </p>
 
               <h2 style={{
@@ -216,7 +227,7 @@ const Home = () => {
                 marginBottom: '25px'
               }}>
                 The Melissa is located in the heart of the Upper East Side, one of Manhattans most refined and sought-after neighborhoods. Known for its tree-lined blocks, classic architecture, and proximity to world-renowned cultural institutions, the area offers a quintessential New York lifestyle. Moments away lie Museum Mile, Central Park, and some of the citys finest dining and shopping options along Madison and Lexington Avenues.
-                Nearby you willll find acclaimed restaurants, cozy cafes, vibrant wine bars, and gourmet markets. The neighborhood is also home to prestigious schools, top-tier fitness studios, and beautiful green spaces including John Jay Park and the East River Esplanade. For cultural outings, The Metropolitan Museum of Art, The Frick Collection, and countless galleries are within easy reach.
+                Nearby you will find acclaimed restaurants, cozy cafes, vibrant wine bars, and gourmet markets. The neighborhood is also home to prestigious schools, top-tier fitness studios, and beautiful green spaces including John Jay Park and the East River Esplanade. For cultural outings, The Metropolitan Museum of Art, The Frick Collection, and countless galleries are within easy reach.
                 Public transportation options abound with nearby Q and 6 subway lines, multiple bus routes, and Citi Bike stations, making commutes and exploring the city effortless.
 
               </p>

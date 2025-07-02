@@ -1,9 +1,9 @@
 import axios from 'axios'
 
-// Vercel API URL - will be updated after deployment
+// Render API URL
 const API_URL = 'https://themelissa-backend.onrender.com'
 
-console.log('🚀 API URL (Vercel):', API_URL);
+console.log('🚀 API URL (Render):', API_URL);
 console.log('🌍 Environment:', import.meta.env.MODE);
 
 const api = axios.create({
@@ -11,7 +11,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 15000 // Longer timeout for Vercel
+  timeout: 15000 // Longer timeout for Render
 })
 
 // Request interceptor to add auth token AND debug logging
