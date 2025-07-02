@@ -10,7 +10,7 @@ const app = express();
 // CORS Configuration for Vercel
 app.use(cors({
   origin: [
-    'themelissa-newyork.vercel.app', // We'll update this after deployment
+    'https://themelissa-newyork.vercel.app', // Fixed: Added https://
     'https://www.themelissanyc.com',
     'https://themelissanyc.com',
     'http://localhost:3000',
@@ -39,7 +39,7 @@ app.get('/api/health', (req, res) => {
     status: 'OK', 
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development',
-    platform: 'Vercel',
+    platform: 'Render',
     version: '4.0'
   });
 });
@@ -53,9 +53,9 @@ app.use('/api/gallery', require('./routes/gallery'));
 // Root route for testing
 app.get('/api', (req, res) => {
   res.json({ 
-    message: 'The Melissa Backend API is running on Vercel!',
+    message: 'The Melissa Backend API is running on Render!',
     version: '4.0',
-    platform: 'Vercel'
+    platform: 'Render'
   });
 });
 
@@ -67,7 +67,7 @@ mongoose.connect(process.env.MONGODB_URI)
     })
     .catch(err => {
         console.log('❌ MongoDB connection error:', err.message);
-        // Don't exit on Vercel - let it retry
+        // Don't exit on Render - let it retry
     });
 
 // Error handling middleware
@@ -79,24 +79,22 @@ app.use((err, req, res, next) => {
   });
 });
 
-// 404 handler
-app.use('*', (req, res) => {
+// 404 handler - FIXED for Express 5.x
+app.use('/*catchall', (req, res) => {
   res.status(404).json({ 
     message: 'API endpoint not found',
     availableEndpoints: ['/api/health', '/api/units', '/api/contacts', '/api/gallery']
   });
 });
 
-// For Vercel, export the app instead of listening
+// For Render, export the app
 module.exports = app;
 
-// For local development
-if (process.env.NODE_ENV !== 'production') {
-  const PORT = process.env.PORT || 5000;
-  app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
-  });
-}
+// For local development and Render
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+});
 
 module.exports = app;
 
