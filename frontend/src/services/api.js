@@ -117,4 +117,37 @@ export const galleryAPI = {
   delete: (id) => api.delete(`/api/gallery/${id}`)
 }
 
+// Helper function to get correct image URL - FIXES the localhost issue
+export const getImageUrl = (imagePath) => {
+  if (!imagePath) {
+    console.warn('No image path provided');
+    return null;
+  }
+  
+  // Always use production URL for images, regardless of environment
+  const PRODUCTION_URL = 'https://themelissa-backend.onrender.com';
+  
+  console.log('🖼️ Processing image path:', imagePath);
+  
+  // If it's already a full URL, return as-is (but ensure it's production URL)
+  if (imagePath.startsWith('http')) {
+    // Replace any localhost URLs with production URL
+    const correctedUrl = imagePath.replace(/http:\/\/localhost:\d+/, PRODUCTION_URL);
+    console.log('🖼️ Full URL corrected to:', correctedUrl);
+    return correctedUrl;
+  }
+  
+  // If it starts with /uploads, use it directly
+  if (imagePath.startsWith('/uploads/')) {
+    const fullUrl = `${PRODUCTION_URL}${imagePath}`;
+    console.log('🖼️ Image URL created:', fullUrl);
+    return fullUrl;
+  }
+  
+  // If it's just a filename, add the full path
+  const fullUrl = `${PRODUCTION_URL}/uploads/${imagePath}`;
+  console.log('🖼️ Image URL created from filename:', fullUrl);
+  return fullUrl;
+};
+
 export default api

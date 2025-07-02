@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { unitAPI } from '../services/api'
+import { unitAPI, getImageUrl } from '../services/api' // Added getImageUrl import
 
 const UnitDetails = () => {
   const { id } = useParams()
@@ -40,6 +40,22 @@ const UnitDetails = () => {
       currency: 'USD',
       minimumFractionDigits: 0,
     }).format(price)
+  }
+
+  // Helper function to get the main image URL
+  const getMainImage = () => {
+    // First try to get the first image from the images array
+    if (unit.images && unit.images.length > 0) {
+      return getImageUrl(unit.images[0])
+    }
+    
+    // Fallback to imageURL if it exists
+    if (unit.imageURL) {
+      return getImageUrl(unit.imageURL)
+    }
+    
+    // Final fallback to placeholder image
+    return 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
   }
 
   if (loading) {
@@ -166,10 +182,10 @@ const UnitDetails = () => {
         </Link>
       </div>
       
-      {/* Unit Image */}
+      {/* Unit Image - FIXED: Now uses getMainImage() helper */}
       <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
         <img 
-          src={unit.imageURL || 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'}
+          src={getMainImage()}
           alt={`Unit ${unit.unitNumber}`}
           style={{
             width: '100%',

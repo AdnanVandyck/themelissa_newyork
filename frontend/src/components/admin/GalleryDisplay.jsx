@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { galleryAPI } from '../../services/api.js'
+import { galleryAPI, getImageUrl } from '../../services/api.js' // Added getImageUrl import
 
 const GalleryDisplay = () => {
   const [galleryItems, setGalleryItems] = useState([])
@@ -8,15 +8,15 @@ const GalleryDisplay = () => {
   const [selectedCategory, setSelectedCategory] = useState('')
   const [lightboxImage, setLightboxImage] = useState(null)
 
-  const categories = [
-    { value: '', label: 'All' },
-    { value: 'building-exterior', label: 'Building' },
-    { value: 'lobby', label: 'Lobby' },
-    { value: 'amenities', label: 'Amenities' },
-    { value: 'rooftop', label: 'Rooftop' },
-    { value: 'apartments', label: 'Apartments' },
-    { value: 'neighborhood', label: 'Neighborhood' }
-  ]
+  // const categories = [
+  //   { value: '', label: 'All' },
+  //   { value: 'building-exterior', label: 'Building' },
+  //   { value: 'lobby', label: 'Lobby' },
+  //   { value: 'amenities', label: 'Amenities' },
+  //   { value: 'rooftop', label: 'Rooftop' },
+  //   { value: 'apartments', label: 'Apartments' },
+  //   { value: 'neighborhood', label: 'Neighborhood' }
+  // ]
 
   useEffect(() => {
     fetchGalleryItems()
@@ -37,12 +37,10 @@ const GalleryDisplay = () => {
       // Your backend returns the array directly
       const items = Array.isArray(response.data) ? response.data : []
       
-      // Convert relative URLs to absolute URLs
+      // FIXED: Use getImageUrl helper instead of hardcoded localhost
       const itemsWithAbsoluteUrls = items.map(item => ({
         ...item,
-        imageUrl: item.imageUrl.startsWith('http') 
-          ? item.imageUrl 
-          : `http://localhost:5000${item.imageUrl}`
+        imageUrl: getImageUrl(item.imageUrl) // Use the helper function
       }))
       
       console.log('Processed gallery items:', itemsWithAbsoluteUrls)
