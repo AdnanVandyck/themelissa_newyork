@@ -11,19 +11,36 @@ const path = require('path');
 const app = express();
 
 
-// MIDDLEWARE
+// CORS Configuration - Updated for production
 app.use(cors({
-  origin: [
-    'https://www.themelissanyc.com',
-    'https://themelissanyc.com',
-    'http://localhost:3000',
-    'http://localhost:5173'
-  ],
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    const allowedOrigins = [
+      'https://www.themelissanyc.com',
+      'https://themelissanyc.com',
+      'http://localhost:3000',
+      'http://localhost:5173'
+    ];
+    
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.log('CORS blocked origin:', origin);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
-app.use(express.json());
+
+// Debug middleware
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.path} - Origin: ${req.get('Origin')}`);
+  next();
+});
 
 // Serve uploaded images statically
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -67,7 +84,8 @@ app.get('/health', (req, res) => {
     status: 'OK', 
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development',
-    cors: 'Updated for themelissanyc.com'
+    cors: 'Updated for themelissanyc.com',
+    version: '2.0'
   });
 });
 
