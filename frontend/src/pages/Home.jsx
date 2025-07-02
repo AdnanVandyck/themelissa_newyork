@@ -197,7 +197,7 @@ const Home = () => {
               }}>
                 A beautifully reimagined pre-war building blending classic Upper East Side charm with sophisticated, contemporary design. All 39 residences have been thoughtfully and meticulously renovated, featuring modern condo-quality finishes and only the finest materials. Italian-made cabinetry, wide-plank oak flooring, and Carrara marble-inspired bathrooms create an elegant and timeless aesthetic.
                 Residents at The Melissa will enjoy a carefully curated collection of amenities to enrich everyday living. These include complimentary high-speed Wi-Fi, a monthly apartment cleaning service, in-unit washer/dryer, and Smart TVs in every residence.
-                While 308 E 78th does not have an elevator, its six-story scale and boutique nature offer an intimate residential feel within a highly desirable Manhattan neighborhood.
+                While The Nelissa does not have an elevator, its six-story scale and boutique nature offer an intimate residential feel within a highly desirable Manhattan neighborhood.
               </p>
 
               <h2 style={{
