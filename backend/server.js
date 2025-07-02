@@ -1,20 +1,15 @@
 // Dependencies
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose')
 const cors = require('cors');
 const path = require('path');
-require('dotenv').config();
+
 
 
 
 const app = express();
 
-// Debug enviornment variables
-// console.log('Enviornment Variables Check:')
-// console.log('NODE_ENV:', process.env.NODE_ENV)
-// console.log('PORT:', process.env.PORT)
-// console.log('MONGODB_URI exists:', !!process.env.MONGODB_URI)
-// console.log('JWT_SECRET exists', !!process.env.JWT_SECRET)
 
 // MIDDLEWARE
 app.use(cors());
@@ -26,6 +21,8 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // Routes
 app.use('/api/units', require('./routes/units'));
 app.use('/api/auth', require('./routes/auth.route'));
+app.use('/api/contacts', require('./routes/contacts'));
+app.use('/api/gallery', require('./routes/gallery'));
 
 // Root route for testing
 app.get('/', (req, res) => {
@@ -44,22 +41,6 @@ mongoose.connect(process.env.MONGODB_URI)
         process.exit(1)
     });
 
-
-
-
-
-// // TEST ROUTE TO MAKE SURE SERVER RUNNING
-// app.get('/', (req, res) => {
-//     res.json({ 
-//         message: 'The Melissa NYC API Server is running',
-//         database: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected',
-//         endpoints: {
-//             units: '/api/units',
-//             auth: '/api/auth',
-//             test: '/api/test'
-//         }
-//     });
-// });
 
 
 app.get('/api/test', (req, res) => {

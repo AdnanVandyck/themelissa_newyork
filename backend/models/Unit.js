@@ -30,6 +30,10 @@ const UnitSchema = new mongoose.Schema({
         type: String,
         default: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80'
     },
+    images: [{
+        type: String,
+        trim: true
+    }],
     available: {
         type: Boolean,
         default: true
@@ -38,6 +42,12 @@ const UnitSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     }
+});
+
+// Update the updatedAt field before saving
+UnitSchema.pre('save', function(next) {
+    this.updatedAt = Date.now();
+    next();
 });
 
 module.exports = mongoose.model('Unit', UnitSchema);

@@ -1,4 +1,4 @@
-* {
+/* * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -17,6 +17,87 @@ html, body {
 #root {
   width: 100%;
   min-height: 100vh;
+}
+
+.w-100 {
+  width: 100% !important;
+}
+
+.min-vh-100 {
+  min-height: 100vh !important;
+} */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  min-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Add global padding for fixed header */
+  padding-top: 29px;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* Header spacing utilities */
+.navbar, header {
+  z-index: 1000;
+}
+
+/* Special case for home page with hero section - remove top padding */
+.home-page {
+  margin-top: -150px; /* Offset the global padding */
+}
+
+/* Alternative class for pages that need manual control */
+.no-header-spacing {
+  margin-top: -130px; /* Offset the global padding */
+}
+
+/* Alternative class for pages that need extra spacing */
+.extra-header-spacing {
+  padding-top: 30px; /* Additional spacing if needed */
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  html, body {
+    padding-top: 120px; /* Slightly less padding on mobile */
+  }
+  
+  .home-page {
+    margin-top: -120px; /* Adjust offset for mobile */
+  }
+  
+  .no-header-spacing {
+    margin-top: -120px; /* Adjust offset for mobile */
+  }
+}
+
+/* Tablet responsiveness */
+@media (max-width: 992px) and (min-width: 769px) {
+  html, body {
+    padding-top: 125px;
+  }
+  
+  .home-page {
+    margin-top: -125px;
+  }
+  
+  .no-header-spacing {
+    margin-top: -125px;
+  }
 }
 
 .w-100 {
