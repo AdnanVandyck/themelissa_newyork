@@ -1,11 +1,7 @@
 import axios from 'axios'
 
 // Vercel API URL - will be updated after deployment
-const API_URL = import.meta.env.VITE_API_URL || 
-  (import.meta.env.PROD 
-    ? 'themelissa-newyork.vercel.app'  // Update this after deployment
-    : 'http://localhost:5000/api'
-  )
+const API_URL = 'https://themelissa-backend.onrender.com'
 
 console.log('🚀 API URL (Vercel):', API_URL);
 console.log('🌍 Environment:', import.meta.env.MODE);
@@ -55,22 +51,22 @@ api.interceptors.response.use(
   }
 )
 
-// Unit API endpoints
+// Unit API endpoints - FIXED: Added /api prefix to all endpoints
 export const unitAPI = {
   getPublic: () => {
-    console.log('🏠 Fetching public units from:', API_URL + '/units/public');
-    return api.get('/units/public');
+    console.log('🏠 Fetching public units from:', API_URL + '/api/units/public');
+    return api.get('/api/units/public');
   },
-  getPublicById: (id) => api.get(`/units/public/${id}`),
-  getAll: () => api.get('/units'),
-  getById: (id) => api.get(`/units/${id}`),
-  create: (data) => api.post('/units', data),
-  update: (id, data) => api.put(`/units/${id}`, data),
-  delete: (id) => api.delete(`/units/${id}`),
+  getPublicById: (id) => api.get(`/api/units/public/${id}`),
+  getAll: () => api.get('/api/units'),
+  getById: (id) => api.get(`/api/units/${id}`),
+  create: (data) => api.post('/api/units', data),
+  update: (id, data) => api.put(`/api/units/${id}`, data),
+  delete: (id) => api.delete(`/api/units/${id}`),
   uploadImage: (imageFile) => {
     const formData = new FormData()
     formData.append('image', imageFile)
-    return api.post('/units/upload-image', formData, {
+    return api.post('/api/units/upload-image', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     })
   },
@@ -79,44 +75,46 @@ export const unitAPI = {
     Array.from(imageFiles).forEach(file => {
       formData.append('images', file)
     })
-    return api.post('/units/upload-images', formData, {
+    return api.post('/api/units/upload-images', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     })
   },
   addImagesToUnit: (unitId, imageUrls) => {
-    return api.put(`/units/${unitId}/images`, { imageUrls })
+    return api.put(`/api/units/${unitId}/images`, { imageUrls })
   },
   removeImageFromUnit: (unitId, imageIndex) => {
-    return api.delete(`/units/${unitId}/images/${imageIndex}`)
+    return api.delete(`/api/units/${unitId}/images/${imageIndex}`)
   }
 }
 
-// Auth API endpoints
+// Auth API endpoints - FIXED: Added /api prefix
 export const authAPI = {
-  login: (credentials) => api.post('/auth/login', credentials),
-  register: (userData) => api.post('/auth/register', userData),
-  verify: () => api.get('/auth/verify')
+  login: (credentials) => api.post('/api/auth/login', credentials),
+  register: (userData) => api.post('/api/auth/register', userData),
+  verify: () => api.get('/api/auth/verify')
 }
 
+// Contact API endpoints - FIXED: Added /api prefix
 export const contactAPI = {
   submitForm: (formData) => {
-    console.log('📝 Submitting contact form to:', API_URL + '/contacts');
-    return api.post('/contacts', formData);
+    console.log('📝 Submitting contact form to:', API_URL + '/api/contacts');
+    return api.post('/api/contacts', formData);
   },
-  getAll: (params = {}) => api.get('/contacts', { params }),
-  getById: (id) => api.get(`/contacts/${id}`),
-  updateStatus: (id, data) => api.put(`/contacts/${id}`, data),
-  delete: (id) => api.delete(`/contacts/${id}`)
+  getAll: (params = {}) => api.get('/api/contacts', { params }),
+  getById: (id) => api.get(`/api/contacts/${id}`),
+  updateStatus: (id, data) => api.put(`/api/contacts/${id}`, data),
+  delete: (id) => api.delete(`/api/contacts/${id}`)
 }
 
+// Gallery API endpoints - FIXED: Added /api prefix
 export const galleryAPI = {
-  getPublic: (category = '') => api.get(`/gallery/public${category ? `?category=${category}` : ''}`),
-  getAll: (params = {}) => api.get('/gallery', { params }),
-  upload: (formData) => api.post('/gallery/upload', formData, {
+  getPublic: (category = '') => api.get(`/api/gallery/public${category ? `?category=${category}` : ''}`),
+  getAll: (params = {}) => api.get('/api/gallery', { params }),
+  upload: (formData) => api.post('/api/gallery/upload', formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
   }),
-  update: (id, data) => api.put(`/gallery/${id}`, data),
-  delete: (id) => api.delete(`/gallery/${id}`)
+  update: (id, data) => api.put(`/api/gallery/${id}`, data),
+  delete: (id) => api.delete(`/api/gallery/${id}`)
 }
 
 export default api
