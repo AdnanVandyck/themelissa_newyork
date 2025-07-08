@@ -4,6 +4,17 @@ const Gallery = require('../models/Gallery');
 const upload = require('../middleware/upload');
 const { authMiddleware, adminMiddleware } = require('../middleware/auth');
 
+// Helper function to get the correct base URL
+const getBaseUrl = () => {
+  // Check if we're in production (Render deployment)
+  if (process.env.NODE_ENV === 'production' || process.env.RENDER) {
+    return 'https://themelissa-backend.onrender.com';
+  }
+  
+  // For local development
+  return `http://localhost:${process.env.PORT || 5000}`;
+};
+
 // GET all active gallery images (PUBLIC)
 router.get('/public', async (req, res) => {
     try {
@@ -63,7 +74,7 @@ router.get('/', async (req, res) => {
     }
 });
 
-// POST upload gallery image (ADMIN)
+// POST upload gallery image (ADMIN) - FIXED: Now generates full production URLs
 router.post('/upload', upload.single('image'), async (req, res) => {
     try {
         console.log('POST /api/gallery/upload - Admin uploading gallery image');
@@ -77,7 +88,12 @@ router.post('/upload', upload.single('image'), async (req, res) => {
         }
 
         const { title, description, category, sortOrder } = req.body;
-        const imageUrl = `/uploads/${req.file.filename}`;
+        
+        // FIXED: Generate full production URL instead of relative path
+        const baseUrl = getBaseUrl();
+        const imageUrl = `${baseUrl}/uploads/${req.file.filename}`;
+        
+        console.log('Generated gallery image URL:', imageUrl);
 
         const galleryItem = new Gallery({
             title: title || 'Gallery Image',

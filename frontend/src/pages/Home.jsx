@@ -96,12 +96,12 @@ const Home = () => {
         backgroundPosition: 'center', // Show full height of building
         backgroundRepeat: 'no-repeat',
         color: 'white',
-        padding: '200px 0 100px 0',
         textAlign: 'center',
         position: 'relative',
-        minHeight: '100vh',
+        height: '100vh',
         display: 'flex',
-        alignItems: 'center'
+        alignItems: 'center',
+        justifyContent: 'center'
       }}>
 
         <div style={{ 

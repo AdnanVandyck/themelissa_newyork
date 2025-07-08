@@ -45,11 +45,11 @@ const AdminLogin = () => {
     }
   }
 
-  // const fillDemoCredentials = () => {
-  //   setEmail('admin@test.com')
-  //   setPassword('password123')
-  //   setError('')
-  // }
+  const fillDemoCredentials = () => {
+    setEmail('admin@test.com')
+    setPassword('password123')
+    setError('')
+  }
 
   // Rest of your component stays exactly the same...
   return (

@@ -4,6 +4,17 @@ const Unit = require('../models/Unit');
 const upload = require('../middleware/upload');
 const { authMiddleware, adminMiddleware } = require('../middleware/auth');
 
+// Helper function to get the correct base URL
+const getBaseUrl = () => {
+  // Check if we're in production (Render deployment)
+  if (process.env.NODE_ENV === 'production' || process.env.RENDER) {
+    return 'https://themelissa-backend.onrender.com';
+  }
+  
+  // For local development
+  return `http://localhost:${process.env.PORT || 5000}`;
+};
+
 // Public route - Get available units only (for regular users/visitors)
 router.get('/public', async (req, res) => {
     try {
@@ -118,7 +129,7 @@ router.post('/', async (req, res) => {
     }
 });
 
-// POST upload image (admin only)
+// POST upload image (admin only) - FIXED: Now generates full production URLs
 router.post('/upload-image', upload.single('image'), (req, res) => {
     try {
         console.log('POST /api/units/upload-image - Admin image upload');
@@ -130,7 +141,11 @@ router.post('/upload-image', upload.single('image'), (req, res) => {
 
         console.log('File uploaded by admin:', req.user.username, '- File:', req.file.filename);
         
-        const imageUrl = `/uploads/${req.file.filename}`;
+        // FIXED: Generate full production URL instead of relative path
+        const baseUrl = getBaseUrl();
+        const imageUrl = `${baseUrl}/uploads/${req.file.filename}`;
+        
+        console.log('Generated image URL:', imageUrl);
         
         res.json({ 
             message: 'Image uploaded successfully',
@@ -143,7 +158,7 @@ router.post('/upload-image', upload.single('image'), (req, res) => {
     }
 });
 
-// POST upload multiple images (NEW ENDPOINT)
+// POST upload multiple images (NEW ENDPOINT) - FIXED: Now generates full production URLs
 router.post('/upload-images', upload.array('images', 10), (req, res) => {
     try {
         console.log('POST /api/units/upload-images - Admin multiple image upload');
@@ -155,8 +170,12 @@ router.post('/upload-images', upload.array('images', 10), (req, res) => {
 
         console.log(`${req.files.length} files uploaded by admin:`, req.user.username);
         
-        const imageUrls = req.files.map(file => `/uploads/${file.filename}`);
+        // FIXED: Generate full production URLs instead of relative paths
+        const baseUrl = getBaseUrl();
+        const imageUrls = req.files.map(file => `${baseUrl}/uploads/${file.filename}`);
         const filenames = req.files.map(file => file.filename);
+        
+        console.log('Generated image URLs:', imageUrls);
         
         res.json({ 
             message: `${req.files.length} images uploaded successfully`,

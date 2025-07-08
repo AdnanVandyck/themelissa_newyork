@@ -1,6 +1,7 @@
+
 import axios from 'axios'
 
-// Render API URL
+// Render API URL - Production
 const API_URL = 'https://themelissa-backend.onrender.com'
 
 console.log('🚀 API URL (Render):', API_URL);
@@ -124,28 +125,38 @@ export const getImageUrl = (imagePath) => {
     return null;
   }
   
-  // Always use production URL for images, regardless of environment
-  const PRODUCTION_URL = 'https://themelissa-backend.onrender.com';
+  // Use the same API_URL logic as the rest of the app
+  const BASE_URL = import.meta.env.VITE_API_URL || 'https://themelissa-backend.onrender.com';
   
   console.log('🖼️ Processing image path:', imagePath);
+  console.log('🖼️ Using BASE_URL:', BASE_URL);
   
-  // If it's already a full URL, return as-is (but ensure it's production URL)
+  // If it's already a full URL, return as-is (but ensure it matches current environment)
   if (imagePath.startsWith('http')) {
-    // Replace any localhost URLs with production URL
-    const correctedUrl = imagePath.replace(/http:\/\/localhost:\d+/, PRODUCTION_URL);
-    console.log('🖼️ Full URL corrected to:', correctedUrl);
-    return correctedUrl;
+    // If we're in development and the image URL is production, replace it
+    if (BASE_URL.includes('localhost') && imagePath.includes('onrender.com')) {
+      const correctedUrl = imagePath.replace('https://themelissa-backend.onrender.com', BASE_URL);
+      console.log('🖼️ URL corrected for development:', correctedUrl);
+      return correctedUrl;
+    }
+    // If we're in production and the image URL is localhost, replace it  
+    if (!BASE_URL.includes('localhost') && imagePath.includes('localhost')) {
+      const correctedUrl = imagePath.replace(/http:\/\/localhost:\d+/, BASE_URL);
+      console.log('🖼️ URL corrected for production:', correctedUrl);
+      return correctedUrl;
+    }
+    return imagePath;
   }
   
   // If it starts with /uploads, use it directly
   if (imagePath.startsWith('/uploads/')) {
-    const fullUrl = `${PRODUCTION_URL}${imagePath}`;
+    const fullUrl = `${BASE_URL}${imagePath}`;
     console.log('🖼️ Image URL created:', fullUrl);
     return fullUrl;
   }
   
   // If it's just a filename, add the full path
-  const fullUrl = `${PRODUCTION_URL}/uploads/${imagePath}`;
+  const fullUrl = `${BASE_URL}/uploads/${imagePath}`;
   console.log('🖼️ Image URL created from filename:', fullUrl);
   return fullUrl;
 };

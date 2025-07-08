@@ -1,3 +1,4 @@
+
 // Dependencies
 require('dotenv').config();
 const express = require('express');
@@ -7,19 +8,47 @@ const path = require('path');
 
 const app = express();
 
-// CORS Configuration for Vercel
+// Handle preflight requests first
+app.options('*', cors());
+
+// CORS Configuration - Updated for Hostinger frontend + Render backend
+// app.use(cors({
+//   origin: [
+//     // Production URLs (Hostinger)
+//     'https://www.themelissanyc.com',
+//     'https://themelissanyc.com',
+//     'http://www.themelissanyc.com',
+//     'http://themelissanyc.com',
+//     // Local development ports
+//     'http://localhost:3000',
+//     'http://localhost:5173',
+//     'http://localhost:5174'
+//   ],
+//   credentials: true,
+//   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+//   allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With']
+// }));
+
 app.use(cors({
-  origin: [
-    'https://themelissa-newyork.vercel.app', // Fixed: Added https://
-    'https://www.themelissanyc.com',
-    'https://themelissanyc.com',
-    'http://localhost:3000',
-    'http://localhost:5173'
-  ],
+  origin: function (origin, callback) {
+    // Allow requests with no origin (mobile apps, curl, etc.)
+    if (!origin) return callback(null, true);
+    
+    // Allow localhost and local network IPs
+    if (origin.includes('localhost') || 
+        origin.includes('192.168.') || 
+        origin.includes('10.0.0.') ||
+        origin.includes('themelissanyc.com')) {
+      return callback(null, true);
+    }
+    
+    callback(null, true); // Allow all for development
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With']
 }));
+
 
 // Body parser middleware
 app.use(express.json());
@@ -40,11 +69,12 @@ app.get('/api/health', (req, res) => {
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development',
     platform: 'Render',
-    version: '4.0'
+    version: '4.0',
+    express: require('express/package.json').version
   });
 });
 
-// Routes (note the /api prefix for Vercel)
+// Routes
 app.use('/api/units', require('./routes/units'));
 app.use('/api/auth', require('./routes/auth.route'));
 app.use('/api/contacts', require('./routes/contacts'));
@@ -55,7 +85,8 @@ app.get('/api', (req, res) => {
   res.json({ 
     message: 'The Melissa Backend API is running on Render!',
     version: '4.0',
-    platform: 'Render'
+    platform: 'Render',
+    express: require('express/package.json').version
   });
 });
 
@@ -79,99 +110,20 @@ app.use((err, req, res, next) => {
   });
 });
 
-// 404 handler - FIXED for Express 5.x
-app.use('/*catchall', (req, res) => {
+// 404 handler - Works with Express 4.x
+app.use('*', (req, res) => {
   res.status(404).json({ 
     message: 'API endpoint not found',
     availableEndpoints: ['/api/health', '/api/units', '/api/contacts', '/api/gallery']
   });
 });
 
-// For Render, export the app
-module.exports = app;
-
 // For local development and Render
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`📦 Express version: ${require('express/package.json').version}`);
+  console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
 });
 
-
-
-// Minimal server.js for testing (replace your backend/server.js temporarily)
-// require('dotenv').config();
-// const express = require('express');
-// const mongoose = require('mongoose');
-// const cors = require('cors');
-// const unitsRoutes = require('./routes/units');
-
-// const app = express();
-
-// // CORS
-// app.use(cors({
-//   origin: [
-//     'https://www.themelissanyc.com',
-//     'https://themelissanyc.com',
-//     'http://localhost:3000',
-//     'http://localhost:5173'
-//   ],
-//   credentials: true,
-//   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-//   allowedHeaders: ['Content-Type', 'Authorization']
-// }));
-
-// app.use(express.json());
-
-// app.use('/api/units', unitsRoutes);
-
-// // Simple health check
-// app.get('/health', (req, res) => {
-//   res.json({
-//     status: 'OK',
-//     timestamp: new Date().toISOString(),
-//     platform: 'Render',
-//     version: '6.0'
-//   });
-// });
-
-// // Simple API routes (no complex routing)
-// app.get('/api/units/public', (req, res) => {
-//   res.json([
-//     {
-//       _id: 'test1',
-//       unitNumber: 'Test Unit 1',
-//       price: 5000,
-//       bedrooms: 2,
-//       bathrooms: 1,
-//       available: true,
-//       description: 'Test unit for deployment'
-//     }
-//   ]);
-// });
-
-// app.post('/api/contacts', (req, res) => {
-//   console.log('Contact form received:', req.body);
-//   res.json({
-//     success: true,
-//     message: 'Contact form submitted successfully'
-//   });
-// });
-
-// // Root route
-// app.get('/', (req, res) => {
-//   res.json({ message: 'The Melissa API is running on Render!' });
-// });
-
-// // MongoDB connection (optional for testing)
-// if (process.env.MONGODB_URI) {
-//   mongoose.connect(process.env.MONGODB_URI)
-//     .then(() => console.log('✅ MongoDB connected'))
-//     .catch(err => console.log('❌ MongoDB error:', err.message));
-// }
-
-// const PORT = process.env.PORT || 5000;
-// app.listen(PORT, () => {
-//   console.log(`🚀 Server running on port ${PORT}`);
-// });
-
-// module.exports = app
+module.exports = app;
