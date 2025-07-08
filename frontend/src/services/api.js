@@ -1,4 +1,3 @@
-
 import axios from 'axios'
 
 // Render API URL - Production
@@ -125,23 +124,25 @@ export const getImageUrl = (imagePath) => {
     return null;
   }
   
-  // Use the same API_URL logic as the rest of the app
-  const BASE_URL = import.meta.env.VITE_API_URL || 'https://themelissa-backend.onrender.com';
+  // Determine if we're in local development
+  const isLocalDev = window.location.hostname === 'localhost' || 
+                    window.location.hostname.startsWith('192.168.') ||
+                    window.location.hostname.startsWith('10.0.0.');
+  
+  // Use local URL only if we're actually running locally
+  const BASE_URL = isLocalDev && import.meta.env.VITE_API_URL 
+    ? import.meta.env.VITE_API_URL 
+    : 'https://themelissa-backend.onrender.com';
   
   console.log('🖼️ Processing image path:', imagePath);
+  console.log('🖼️ Is local dev:', isLocalDev);
   console.log('🖼️ Using BASE_URL:', BASE_URL);
   
-  // If it's already a full URL, return as-is (but ensure it matches current environment)
+  // If it's already a full URL, fix it if needed
   if (imagePath.startsWith('http')) {
-    // If we're in development and the image URL is production, replace it
-    if (BASE_URL.includes('localhost') && imagePath.includes('onrender.com')) {
-      const correctedUrl = imagePath.replace('https://themelissa-backend.onrender.com', BASE_URL);
-      console.log('🖼️ URL corrected for development:', correctedUrl);
-      return correctedUrl;
-    }
-    // If we're in production and the image URL is localhost, replace it  
-    if (!BASE_URL.includes('localhost') && imagePath.includes('localhost')) {
-      const correctedUrl = imagePath.replace(/http:\/\/localhost:\d+/, BASE_URL);
+    // Always replace local IPs with production URL for live sites
+    if (!isLocalDev && (imagePath.includes('localhost') || imagePath.includes('192.168.') || imagePath.includes('10.0.0.'))) {
+      const correctedUrl = imagePath.replace(/http:\/\/(localhost|192\.168\.\d+\.\d+|10\.0\.0\.\d+):\d+/, 'https://themelissa-backend.onrender.com');
       console.log('🖼️ URL corrected for production:', correctedUrl);
       return correctedUrl;
     }
