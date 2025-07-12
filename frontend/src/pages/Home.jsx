@@ -308,7 +308,7 @@ const Home = () => {
                 margin: '0 0 15px 0',
                 lineHeight: '1'
               }}>
-                {units.length}
+                39{/* {units.length} */}
               </h3>
               <p style={{
                 fontSize: '14px',
