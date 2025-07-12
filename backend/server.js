@@ -1,4 +1,133 @@
 
+// // Dependencies
+// require('dotenv').config();
+// const express = require('express');
+// const mongoose = require('mongoose')
+// const cors = require('cors');
+// const path = require('path');
+
+// const app = express();
+
+// // Handle preflight requests first
+// app.options('*', cors());
+
+// // CORS Configuration - Updated for Hostinger frontend + Render backend
+// // app.use(cors({
+// //   origin: [
+// //     // Production URLs (Hostinger)
+// //     'https://www.themelissanyc.com',
+// //     'https://themelissanyc.com',
+// //     'http://www.themelissanyc.com',
+// //     'http://themelissanyc.com',
+// //     // Local development ports
+// //     'http://localhost:3000',
+// //     'http://localhost:5173',
+// //     'http://localhost:5174'
+// //   ],
+// //   credentials: true,
+// //   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+// //   allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With']
+// // }));
+
+// app.use(cors({
+//   origin: function (origin, callback) {
+//     // Allow requests with no origin (mobile apps, curl, etc.)
+//     if (!origin) return callback(null, true);
+    
+//     // Allow localhost and local network IPs
+//     if (origin.includes('localhost') || 
+//         origin.includes('192.168.') || 
+//         origin.includes('10.0.0.') ||
+//         origin.includes('themelissanyc.com')) {
+//       return callback(null, true);
+//     }
+    
+//     callback(null, true); // Allow all for development
+//   },
+//   credentials: true,
+//   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+//   allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With']
+// }));
+
+
+// // Body parser middleware
+// app.use(express.json());
+
+// // Debug middleware
+// app.use((req, res, next) => {
+//   console.log(`${req.method} ${req.path} - Origin: ${req.get('Origin')}`);
+//   next();
+// });
+
+// // Serve uploaded images statically
+// app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// // Health check endpoint
+// app.get('/api/health', (req, res) => {
+//   res.status(200).json({ 
+//     status: 'OK', 
+//     timestamp: new Date().toISOString(),
+//     environment: process.env.NODE_ENV || 'development',
+//     platform: 'Render',
+//     version: '4.0',
+//     express: require('express/package.json').version
+//   });
+// });
+
+// // Routes
+// app.use('/api/units', require('./routes/units'));
+// app.use('/api/auth', require('./routes/auth.route'));
+// app.use('/api/contacts', require('./routes/contacts'));
+// app.use('/api/gallery', require('./routes/gallery'));
+
+// // Root route for testing
+// app.get('/api', (req, res) => {
+//   res.json({ 
+//     message: 'The Melissa Backend API is running on Render!',
+//     version: '4.0',
+//     platform: 'Render',
+//     express: require('express/package.json').version
+//   });
+// });
+
+// // Database connection
+// mongoose.connect(process.env.MONGODB_URI)
+//     .then(() => {
+//         console.log('✅ MongoDB Atlas connected successfully');
+//         console.log('📊 Database:', mongoose.connection.name)
+//     })
+//     .catch(err => {
+//         console.log('❌ MongoDB connection error:', err.message);
+//         // Don't exit on Render - let it retry
+//     });
+
+// // Error handling middleware
+// app.use((err, req, res, next) => {
+//   console.error('Server Error:', err);
+//   res.status(500).json({ 
+//     message: 'Internal server error',
+//     error: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
+//   });
+// });
+
+// // 404 handler - Works with Express 4.x
+// app.use('*', (req, res) => {
+//   res.status(404).json({ 
+//     message: 'API endpoint not found',
+//     availableEndpoints: ['/api/health', '/api/units', '/api/contacts', '/api/gallery']
+//   });
+// });
+
+// // For local development and Render
+// const PORT = process.env.PORT || 5000;
+// app.listen(PORT, () => {
+//   console.log(`🚀 Server running on port ${PORT}`);
+//   console.log(`📦 Express version: ${require('express/package.json').version}`);
+//   console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+// });
+
+// module.exports = app;
+
 // Dependencies
 require('dotenv').config();
 const express = require('express');
@@ -8,27 +137,20 @@ const path = require('path');
 
 const app = express();
 
+// Import Cloudinary test function (we'll create this file next)
+let testCloudinaryConnection;
+try {
+  const { testCloudinaryConnection: cloudinaryTest } = require('./config/cloudinary');
+  testCloudinaryConnection = cloudinaryTest;
+} catch (error) {
+  console.log('⚠️ Cloudinary config not found - will create during setup');
+  testCloudinaryConnection = async () => false;
+}
+
 // Handle preflight requests first
 app.options('*', cors());
 
 // CORS Configuration - Updated for Hostinger frontend + Render backend
-// app.use(cors({
-//   origin: [
-//     // Production URLs (Hostinger)
-//     'https://www.themelissanyc.com',
-//     'https://themelissanyc.com',
-//     'http://www.themelissanyc.com',
-//     'http://themelissanyc.com',
-//     // Local development ports
-//     'http://localhost:3000',
-//     'http://localhost:5173',
-//     'http://localhost:5174'
-//   ],
-//   credentials: true,
-//   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-//   allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With']
-// }));
-
 app.use(cors({
   origin: function (origin, callback) {
     // Allow requests with no origin (mobile apps, curl, etc.)
@@ -49,7 +171,6 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With']
 }));
 
-
 // Body parser middleware
 app.use(express.json());
 
@@ -59,18 +180,33 @@ app.use((req, res, next) => {
   next();
 });
 
-// Serve uploaded images statically
+// IMPORTANT: Keep this for backward compatibility during migration
+// You can remove this after confirming all images are moved to Cloudinary
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Health check endpoint
-app.get('/api/health', (req, res) => {
+// Enhanced Health check endpoint with Cloudinary status
+app.get('/api/health', async (req, res) => {
+  // Test Cloudinary connection
+  const cloudinaryStatus = await testCloudinaryConnection();
+  
+  // Check if Cloudinary environment variables are set
+  const cloudinaryConfigured = !!(
+    process.env.CLOUDINARY_CLOUD_NAME && 
+    process.env.CLOUDINARY_API_KEY && 
+    process.env.CLOUDINARY_API_SECRET
+  );
+  
   res.status(200).json({ 
     status: 'OK', 
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development',
     platform: 'Render',
-    version: '4.0',
-    express: require('express/package.json').version
+    version: '4.1', // Updated version
+    express: require('express/package.json').version,
+    cloudinary: cloudinaryStatus ? 'Connected' : 'Disconnected',
+    cloudinaryConfigured: cloudinaryConfigured,
+    database: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected',
+    imageStorage: cloudinaryStatus ? 'Cloudinary' : 'Local (Ephemeral)'
   });
 });
 
@@ -83,18 +219,35 @@ app.use('/api/gallery', require('./routes/gallery'));
 // Root route for testing
 app.get('/api', (req, res) => {
   res.json({ 
-    message: 'The Melissa Backend API is running on Render!',
-    version: '4.0',
+    message: 'The Melissa Backend API is running on Render with Cloudinary!',
+    version: '4.1',
     platform: 'Render',
-    express: require('express/package.json').version
+    express: require('express/package.json').version,
+    imageStorage: 'Cloudinary + Local (Migration Mode)'
   });
 });
 
-// Database connection
+// Database connection with Cloudinary connection test
 mongoose.connect(process.env.MONGODB_URI)
-    .then(() => {
+    .then(async () => {
         console.log('✅ MongoDB Atlas connected successfully');
-        console.log('📊 Database:', mongoose.connection.name)
+        console.log('📊 Database:', mongoose.connection.name);
+        
+        // Test Cloudinary connection on startup
+        console.log('🔍 Testing Cloudinary connection...');
+        const cloudinaryConnected = await testCloudinaryConnection();
+        
+        if (cloudinaryConnected) {
+          console.log('☁️ ✅ Cloudinary connection successful!');
+          console.log('📸 Image storage: Cloudinary (Persistent)');
+        } else {
+          console.log('☁️ ❌ Cloudinary connection failed');
+          console.log('📋 Check these environment variables:');
+          console.log('   - CLOUDINARY_CLOUD_NAME:', process.env.CLOUDINARY_CLOUD_NAME ? 'SET' : 'MISSING');
+          console.log('   - CLOUDINARY_API_KEY:', process.env.CLOUDINARY_API_KEY ? 'SET' : 'MISSING');
+          console.log('   - CLOUDINARY_API_SECRET:', process.env.CLOUDINARY_API_SECRET ? 'SET' : 'MISSING');
+          console.log('📸 Falling back to local storage (images will be ephemeral)');
+        }
     })
     .catch(err => {
         console.log('❌ MongoDB connection error:', err.message);
@@ -124,6 +277,14 @@ app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📦 Express version: ${require('express/package.json').version}`);
   console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log('🔄 Migration Mode: Supporting both Cloudinary and local storage');
+  
+  // Show current configuration status
+  if (process.env.CLOUDINARY_CLOUD_NAME) {
+    console.log('☁️ Cloudinary configured for:', process.env.CLOUDINARY_CLOUD_NAME);
+  } else {
+    console.log('⚠️ Cloudinary not configured - add environment variables');
+  }
 });
 
 module.exports = app;
