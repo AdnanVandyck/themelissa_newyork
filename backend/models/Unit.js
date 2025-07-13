@@ -34,6 +34,10 @@ const UnitSchema = new mongoose.Schema({
         type: String,
         trim: true
     }],
+    layoutImage: {
+        type: String, // NEW FIELD: Layout/floor plan image
+        default: null
+    },
     available: {
         type: Boolean,
         default: true
@@ -42,6 +46,8 @@ const UnitSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     }
+}, {
+  timestamps: true // Adds createdAt and updatedAt
 });
 
 // Update the updatedAt field before saving
@@ -49,5 +55,10 @@ UnitSchema.pre('save', function(next) {
     this.updatedAt = Date.now();
     next();
 });
+
+// Index for efficient queries
+UnitSchema.index({ unitNumber: 1 })
+UnitSchema.index({ available: 1 })
+UnitSchema.index({ price: 1 })
 
 module.exports = mongoose.model('Unit', UnitSchema);
