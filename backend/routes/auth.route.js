@@ -1,11 +1,18 @@
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto"); // REQUIRED for token generation
 const User = require("../models/User.js");
 const { authMiddleware } = require('../middleware/auth');
+const emailService = require('../config/emailService'); // MUST be in config folder
 const router = express.Router();
 
-// POST login - Enhanced to support email or username
+// Helper function to generate verification token
+function generateVerificationToken() {
+  return crypto.randomBytes(32).toString('hex');
+}
+
+// POST login - Enhanced to support email or username with email verification check
 router.post("/login", async (req, res) => {
   try {
     console.log("POST /api/auth/login");
@@ -35,17 +42,30 @@ router.post("/login", async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    // Check if user is active
-    if (!user.isActive) {
-      console.log("User account deactivated:", loginIdentifier);
-      return res.status(401).json({ message: "Account has been deactivated" });
-    }
-
     // Use the comparePassword method from User model
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
       console.log("Invalid password for user:", loginIdentifier);
       return res.status(400).json({ message: "Invalid credentials" });
+    }
+
+    // Check if email is verified (NEW)
+    if (!user.emailVerified) {
+      console.log("Email not verified for user:", loginIdentifier);
+      return res.status(401).json({ 
+        message: "Please verify your email before logging in",
+        emailNotVerified: true,
+        email: user.email
+      });
+    }
+
+    // Check if user is active
+    if (!user.isActive) {
+      console.log("User account deactivated:", loginIdentifier);
+      return res.status(401).json({ 
+        message: "Your account is pending approval. Please contact an administrator.",
+        pendingApproval: true
+      });
     }
 
     // Check if JWT_Secret exists before creating token
@@ -86,7 +106,8 @@ router.post("/login", async (req, res) => {
         role: user.role,
         permissions: user.permissions,
         lastLogin: user.lastLogin,
-        isActive: user.isActive
+        isActive: user.isActive,
+        emailVerified: user.emailVerified // NEW
       },
     });
   } catch (error) {
@@ -99,7 +120,7 @@ router.post("/login", async (req, res) => {
   }
 });
 
-// POST register-public - NEW: Public Registration (No Authentication Required)
+// POST register-public - Enhanced with real email verification
 router.post("/register-public", async (req, res) => {
   try {
     console.log("POST /api/auth/register-public - Public user registration");
@@ -211,7 +232,11 @@ router.post("/register-public", async (req, res) => {
       }
     };
 
-    // Create new user (starts as inactive - requires admin approval)
+    // Generate verification token (NEW)
+    const verificationToken = generateVerificationToken();
+    const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+    // Create new user (starts as inactive and unverified)
     const newUser = new User({
       username: username.toLowerCase(),
       email: email.toLowerCase(),
@@ -221,30 +246,90 @@ router.post("/register-public", async (req, res) => {
       role,
       permissions: userPermissions,
       isActive: false, // Requires admin approval
-      // Note: If you implement email verification later, add those fields here
+      emailVerified: false, // NEW - Requires email verification
+      emailVerificationToken: verificationToken, // NEW
+      emailVerificationExpires: verificationExpires, // NEW
+      verificationAttempts: 0 // NEW
     });
 
     await newUser.save();
 
-    console.log('✅ New user registered (pending approval):', newUser.username);
+    console.log('✅ New user registered (pending verification):', newUser.username);
 
-    // For now, we'll simulate email being sent
-    const emailSent = true; // You can implement actual email sending later
-
-    res.status(201).json({
-      success: true,
-      message: 'Registration successful! Your account is pending admin approval.',
-      user: {
-        id: newUser._id,
-        username: newUser.username,
-        email: newUser.email,
-        firstName: newUser.firstName,
-        lastName: newUser.lastName,
-        role: newUser.role,
-        isActive: newUser.isActive
-      },
-      emailSent
-    });
+    // Send verification email (NEW)
+    try {
+      const emailResult = await emailService.sendVerificationEmail(newUser, verificationToken);
+      
+      if (emailResult.success) {
+        console.log('📧 Verification email sent successfully to:', newUser.email);
+        res.status(201).json({
+          success: true,
+          message: 'Registration successful! Please check your email to verify your account.',
+          user: {
+            id: newUser._id,
+            username: newUser.username,
+            email: newUser.email,
+            firstName: newUser.firstName,
+            lastName: newUser.lastName,
+            role: newUser.role,
+            isActive: newUser.isActive,
+            emailVerified: newUser.emailVerified
+          },
+          emailSent: true
+        });
+      } else if (emailResult.simulated) {
+        console.log('⚠️ Email service not configured - registration successful but no email sent');
+        res.status(201).json({
+          success: true,
+          message: 'Registration successful! Email service not configured - please contact administrator for manual verification.',
+          user: {
+            id: newUser._id,
+            username: newUser.username,
+            email: newUser.email,
+            firstName: newUser.firstName,
+            lastName: newUser.lastName,
+            role: newUser.role,
+            isActive: newUser.isActive,
+            emailVerified: newUser.emailVerified
+          },
+          emailSent: false
+        });
+      } else {
+        console.log('❌ Email sending failed:', emailResult.error);
+        res.status(201).json({
+          success: true,
+          message: 'Registration successful! However, there was an issue sending the verification email. Please use the resend option.',
+          user: {
+            id: newUser._id,
+            username: newUser.username,
+            email: newUser.email,
+            firstName: newUser.firstName,
+            lastName: newUser.lastName,
+            role: newUser.role,
+            isActive: newUser.isActive,
+            emailVerified: newUser.emailVerified
+          },
+          emailSent: false
+        });
+      }
+    } catch (emailError) {
+      console.error('❌ Email sending failed with exception:', emailError);
+      res.status(201).json({
+        success: true,
+        message: 'Registration successful! However, there was an issue sending the verification email. Please use the resend option.',
+        user: {
+          id: newUser._id,
+          username: newUser.username,
+          email: newUser.email,
+          firstName: newUser.firstName,
+          lastName: newUser.lastName,
+          role: newUser.role,
+          isActive: newUser.isActive,
+          emailVerified: newUser.emailVerified
+        },
+        emailSent: false
+      });
+    }
 
   } catch (error) {
     console.log("Public registration error:", error.message);
@@ -266,13 +351,13 @@ router.post("/register-public", async (req, res) => {
   }
 });
 
-// ADD THIS ENDPOINT - Email Verification (No Authentication Required)
+// POST verify-email - Real email verification implementation
 router.post("/verify-email/:token", async (req, res) => {
   try {
     const { token } = req.params;
     console.log("POST /api/auth/verify-email - Token verification:", token);
 
-    // Validate token format (basic check)
+    // Validate token format
     if (!token || token.length < 10) {
       return res.status(400).json({
         success: false,
@@ -280,51 +365,66 @@ router.post("/verify-email/:token", async (req, res) => {
       });
     }
 
-    // For now, we'll simulate token verification since you don't have email verification fields yet
-    // In a real implementation, you'd check: emailVerificationToken and emailVerificationExpires
-    
-    // Try to find a user that might match this token
-    // Since we don't have the token field yet, we'll simulate based on token pattern
-    console.log('🔍 Simulating email verification for token:', token);
+    // Find user with valid token
+    const user = await User.findOne({
+      emailVerificationToken: token,
+      emailVerificationExpires: { $gt: Date.now() }
+    });
 
-    // Simulate different responses based on token for testing
-    if (token === 'expired-token') {
+    if (!user) {
+      console.log('❌ Invalid or expired token:', token);
       return res.status(400).json({
         success: false,
-        message: 'Invalid or expired verification token'
+        message: 'Invalid or expired verification token',
+        expired: true
       });
     }
 
-    if (token === 'already-verified') {
+    // Check if already verified
+    if (user.emailVerified) {
       return res.status(400).json({
         success: false,
         message: 'Email is already verified'
       });
     }
 
-    // For testing purposes, find any inactive user to simulate verification
-    const user = await User.findOne({ isActive: false }).sort({ createdAt: -1 });
+    // Update user verification status
+    user.emailVerified = true;
+    user.emailVerificationToken = undefined;
+    user.emailVerificationExpires = undefined;
+    user.verificationAttempts = 0;
+    user.updatedAt = new Date();
 
-    if (!user) {
-      return res.status(400).json({
-        success: false,
-        message: 'No pending verification found. User may already be verified or does not exist.'
-      });
+    await user.save();
+
+    console.log('✅ Email verified for user:', user.username);
+
+    // Send welcome email
+    try {
+      await emailService.sendWelcomeEmail(user);
+      console.log('📧 Welcome email sent to:', user.email);
+    } catch (emailError) {
+      console.error('❌ Welcome email failed:', emailError);
+      // Don't fail the verification if welcome email fails
     }
 
-    // Simulate successful verification
-    console.log('✅ Simulating email verification for user:', user.username);
+    // Notify admins about new verified user needing approval
+    try {
+      // Get all admin emails for notification
+      const admins = await User.find({ role: 'admin', isActive: true, emailVerified: true });
+      console.log(`📧 Notifying ${admins.length} admins about new verified user`);
+      
+      for (const admin of admins) {
+        await emailService.sendNewUserNotification(admin.email, user);
+      }
+    } catch (notificationError) {
+      console.error('❌ Admin notification failed:', notificationError);
+      // Don't fail verification if admin notification fails
+    }
 
-    // In the real implementation, you would:
-    // user.isEmailVerified = true;
-    // user.emailVerificationToken = null;
-    // user.emailVerificationExpires = null;
-    // await user.save();
-
-    // For now, just return success without modifying the user
     res.json({
       success: true,
-      message: 'Email verified successfully! Your account is pending admin approval.',
+      message: 'Email verified successfully! Your account is now pending admin approval.',
       user: {
         id: user._id,
         username: user.username,
@@ -332,13 +432,13 @@ router.post("/verify-email/:token", async (req, res) => {
         firstName: user.firstName,
         lastName: user.lastName,
         role: user.role,
-        isEmailVerified: true, // Simulated
+        emailVerified: user.emailVerified,
         isActive: user.isActive
       }
     });
 
   } catch (error) {
-    console.error('Email verification error:', error);
+    console.error('❌ Email verification error:', error);
     res.status(500).json({
       success: false,
       message: 'Email verification failed. Please try again.'
@@ -346,7 +446,7 @@ router.post("/verify-email/:token", async (req, res) => {
   }
 });
 
-// ADD THIS ENDPOINT - Resend Verification Email (No Authentication Required)
+// POST resend-verification - Real implementation
 router.post("/resend-verification", async (req, res) => {
   try {
     const { email } = req.body;
@@ -369,38 +469,67 @@ router.post("/resend-verification", async (req, res) => {
       });
     }
 
-    // Simulate already verified check
-    if (user.isActive) {
+    // Check if already verified
+    if (user.emailVerified) {
       return res.status(400).json({
         success: false,
-        message: 'Email is already verified and account is active'
+        message: 'Email is already verified'
       });
     }
 
-    // Simulate sending verification email
-    console.log('📧 Simulating resend verification email to:', user.email);
+    // Check attempt limit (prevent spam)
+    if (user.verificationAttempts >= 3) {
+      return res.status(429).json({
+        success: false,
+        message: 'Too many verification attempts. Please contact support.'
+      });
+    }
 
-    // In real implementation, you would:
-    // const verificationToken = user.generateEmailVerificationToken();
-    // await user.save();
-    // await emailService.sendVerificationEmail(user.email, verificationToken, user.getFullName(), user.username);
+    // Generate new token
+    const verificationToken = generateVerificationToken();
+    const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
-    res.json({
-      success: true,
-      message: 'Verification email sent successfully!',
-      emailSent: true // Simulated
-    });
+    user.emailVerificationToken = verificationToken;
+    user.emailVerificationExpires = verificationExpires;
+    user.verificationAttempts += 1;
+    user.updatedAt = new Date();
+
+    await user.save();
+
+    // Send verification email
+    try {
+      const emailResult = await emailService.sendVerificationEmail(user, verificationToken);
+      
+      if (emailResult.success) {
+        console.log('📧 Verification email resent to:', user.email);
+        res.json({
+          success: true,
+          message: 'Verification email sent successfully!',
+          attemptsRemaining: 3 - user.verificationAttempts
+        });
+      } else {
+        console.log('❌ Failed to resend verification email');
+        res.status(500).json({
+          success: false,
+          message: 'Failed to send verification email. Please try again later.'
+        });
+      }
+    } catch (emailError) {
+      console.error('❌ Resend verification email failed:', emailError);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to send verification email. Please try again later.'
+      });
+    }
 
   } catch (error) {
-    console.error('Resend verification error:', error);
+    console.error('❌ Resend verification error:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to resend verification email. Please try again.'
     });
   }
 });
-
-
 
 // POST register - Admin-only registration (requires authentication)
 router.post("/register", authMiddleware, async (req, res) => {
@@ -513,7 +642,7 @@ router.post("/register", authMiddleware, async (req, res) => {
       userPermissions = { ...userPermissions, ...permissions };
     }
 
-    // Create new user (admin-created users are automatically active)
+    // Create new user (admin-created users are automatically active and verified)
     const newUser = new User({
       username: username.toLowerCase(),
       email: email.toLowerCase(),
@@ -523,7 +652,8 @@ router.post("/register", authMiddleware, async (req, res) => {
       role,
       permissions: userPermissions,
       registeredBy: req.user._id,
-      isActive: true // Admin-created users are automatically active
+      isActive: true, // Admin-created users are automatically active
+      emailVerified: true // Admin-created users are automatically verified
     });
 
     await newUser.save();
@@ -541,7 +671,8 @@ router.post("/register", authMiddleware, async (req, res) => {
         lastName: newUser.lastName,
         role: newUser.role,
         permissions: newUser.permissions,
-        isActive: newUser.isActive
+        isActive: newUser.isActive,
+        emailVerified: newUser.emailVerified
       }
     });
 
@@ -583,7 +714,8 @@ router.get("/verify", authMiddleware, async (req, res) => {
         role: req.user.role,
         permissions: req.user.permissions,
         lastLogin: req.user.lastLogin,
-        isActive: req.user.isActive
+        isActive: req.user.isActive,
+        emailVerified: req.user.emailVerified
       }
     });
 
@@ -611,7 +743,7 @@ router.get('/users', authMiddleware, async (req, res) => {
     }
 
     const users = await User.find()
-      .select('-password')
+      .select('-password -emailVerificationToken') // Don't expose sensitive data
       .populate('registeredBy', 'username firstName lastName')
       .sort({ createdAt: -1 });
 
@@ -632,7 +764,7 @@ router.get('/users', authMiddleware, async (req, res) => {
   }
 });
 
-// GET pending users (admin only) - NEW ENDPOINT for user management
+// GET pending users (admin only) - Enhanced with email verification status
 router.get('/pending-users', authMiddleware, async (req, res) => {
   try {
     console.log('GET /api/auth/pending-users - Fetching users pending approval');
@@ -648,7 +780,7 @@ router.get('/pending-users', authMiddleware, async (req, res) => {
     const pendingUsers = await User.find({ 
       isActive: false 
     })
-    .select('-password')
+    .select('-password -emailVerificationToken') // Don't expose sensitive data
     .sort({ createdAt: -1 });
 
     console.log(`Found ${pendingUsers.length} users pending approval`);
@@ -668,24 +800,7 @@ router.get('/pending-users', authMiddleware, async (req, res) => {
   }
 });
 
-router.get('/routes', (req, res) => {
-  const routes = [];
-  router.stack.forEach(function(middleware) {
-    if (middleware.route) {
-      const methods = Object.keys(middleware.route.methods);
-      routes.push({
-        path: middleware.route.path,
-        methods: methods
-      });
-    }
-  });
-  res.json({ 
-    message: 'Registered auth routes:',
-    routes: routes 
-  });
-});
-
-// PUT approve user (admin only) - NEW ENDPOINT for user management
+// PUT approve user (admin only) - Enhanced to require email verification
 router.put('/approve-user/:id', authMiddleware, async (req, res) => {
   try {
     console.log(`PUT /api/auth/approve-user/${req.params.id} - Approving user`);
@@ -713,11 +828,29 @@ router.put('/approve-user/:id', authMiddleware, async (req, res) => {
       });
     }
 
+    // Check if email is verified (NEW)
+    if (!user.emailVerified) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot approve user with unverified email'
+      });
+    }
+
     // Approve the user
     user.isActive = true;
+    user.updatedAt = new Date();
     await user.save();
 
     console.log('✅ User approved:', user.username, 'by:', req.user.username);
+
+    // Send approval notification email
+    try {
+      await emailService.sendApprovalNotification(user);
+      console.log('📧 Approval notification sent to:', user.email);
+    } catch (emailError) {
+      console.error('❌ Approval email failed:', emailError);
+      // Don't fail approval if email fails
+    }
 
     res.json({
       success: true,
@@ -729,7 +862,8 @@ router.put('/approve-user/:id', authMiddleware, async (req, res) => {
         firstName: user.firstName,
         lastName: user.lastName,
         role: user.role,
-        isActive: user.isActive
+        isActive: user.isActive,
+        emailVerified: user.emailVerified
       }
     });
 
@@ -738,6 +872,64 @@ router.put('/approve-user/:id', authMiddleware, async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Server error approving user'
+    });
+  }
+});
+
+// PUT reject user (admin only) - NEW endpoint for rejecting users
+router.put('/reject-user/:id', authMiddleware, async (req, res) => {
+  try {
+    console.log(`PUT /api/auth/reject-user/${req.params.id} - Rejecting user`);
+    
+    const { reason } = req.body;
+    
+    // Check permissions
+    if (req.user.role !== 'admin' && !req.user.permissions?.users?.delete) {
+      return res.status(403).json({
+        success: false,
+        message: 'Insufficient permissions to reject users'
+      });
+    }
+
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    if (user.isActive) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot reject an active user'
+      });
+    }
+
+    console.log('✅ User rejected:', user.username, 'by:', req.user.username);
+
+    // Send rejection notification email
+    try {
+      await emailService.sendRejectionNotification(user, reason);
+      console.log('📧 Rejection notification sent to:', user.email);
+    } catch (emailError) {
+      console.error('❌ Rejection email failed:', emailError);
+      // Continue with rejection even if email fails
+    }
+
+    // Remove the user from database
+    await User.findByIdAndDelete(req.params.id);
+
+    res.json({
+      success: true,
+      message: 'User rejected and removed successfully'
+    });
+
+  } catch (error) {
+    console.error('Error rejecting user:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error rejecting user'
     });
   }
 });
@@ -773,6 +965,8 @@ router.put('/users/:id', authMiddleware, async (req, res) => {
     if (role) user.role = role;
     if (isActive !== undefined) user.isActive = isActive;
     if (permissions) user.permissions = { ...user.permissions, ...permissions };
+    
+    user.updatedAt = new Date();
 
     await user.save();
 
@@ -789,7 +983,8 @@ router.put('/users/:id', authMiddleware, async (req, res) => {
         lastName: user.lastName,
         role: user.role,
         permissions: user.permissions,
-        isActive: user.isActive
+        isActive: user.isActive,
+        emailVerified: user.emailVerified
       }
     });
 
@@ -834,6 +1029,7 @@ router.delete('/users/:id', authMiddleware, async (req, res) => {
 
     // Deactivate instead of delete
     user.isActive = false;
+    user.updatedAt = new Date();
     await user.save();
 
     console.log('✅ User deactivated:', user.username);
@@ -850,6 +1046,34 @@ router.delete('/users/:id', authMiddleware, async (req, res) => {
       message: 'Server error deactivating user'
     });
   }
+});
+
+// GET routes - Debug endpoint
+router.get('/routes', (req, res) => {
+  const routes = [];
+  router.stack.forEach(function(middleware) {
+    if (middleware.route) {
+      const methods = Object.keys(middleware.route.methods);
+      routes.push({
+        path: middleware.route.path,
+        methods: methods
+      });
+    }
+  });
+  res.json({ 
+    message: 'Registered auth routes:',
+    routes: routes 
+  });
+});
+
+// GET test - Test endpoint
+router.get('/test', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Auth routes working correctly',
+    timestamp: new Date().toISOString(),
+    emailServiceConfigured: emailService.isConfigured
+  });
 });
 
 module.exports = router;

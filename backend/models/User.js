@@ -1,124 +1,3 @@
-// const mongoose = require('mongoose')
-// const bcrypt = require('bcryptjs')
-
-// const userSchema = new mongoose.Schema({
-//   username: {
-//     type: String,
-//     required: true,
-//     unique: true,
-//     trim: true,
-//     minlength: 3,
-//     maxlength: 30
-//   },
-//   email: {
-//     type: String,
-//     required: true,
-//     unique: true,
-//     trim: true,
-//     lowercase: true,
-//     match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please enter a valid email']
-//   },
-//   password: {
-//     type: String,
-//     required: true,
-//     minlength: 6
-//   },
-//   firstName: {
-//     type: String,
-//     required: true,
-//     trim: true,
-//     maxlength: 50
-//   },
-//   lastName: {
-//     type: String,
-//     required: true,
-//     trim: true,
-//     maxlength: 50
-//   },
-//   role: {
-//     type: String,
-//     enum: ['admin', 'manager', 'staff'],
-//     default: 'staff'
-//   },
-//   isActive: {
-//     type: Boolean,
-//     default: true
-//   },
-//   permissions: {
-//     units: {
-//       create: { type: Boolean, default: true },
-//       read: { type: Boolean, default: true },
-//       update: { type: Boolean, default: true },
-//       delete: { type: Boolean, default: false }
-//     },
-//     contacts: {
-//       read: { type: Boolean, default: true },
-//       update: { type: Boolean, default: true },
-//       delete: { type: Boolean, default: false }
-//     },
-//     gallery: {
-//       create: { type: Boolean, default: true },
-//       read: { type: Boolean, default: true },
-//       update: { type: Boolean, default: true },
-//       delete: { type: Boolean, default: false }
-//     },
-//     users: {
-//       create: { type: Boolean, default: false },
-//       read: { type: Boolean, default: false },
-//       update: { type: Boolean, default: false },
-//       delete: { type: Boolean, default: false }
-//     }
-//   },
-//   lastLogin: {
-//     type: Date
-//   },
-//   registeredBy: {
-//     type: mongoose.Schema.Types.ObjectId,
-//     ref: 'User'
-//   }
-// }, {
-//   timestamps: true
-// })
-
-// // Hash password before saving
-// userSchema.pre('save', async function(next) {
-//   // Only hash the password if it has been modified (or is new)
-//   if (!this.isModified('password')) return next()
-  
-//   try {
-//     // Hash password with cost of 12
-//     const hashedPassword = await bcrypt.hash(this.password, 12)
-//     this.password = hashedPassword
-//     next()
-//   } catch (error) {
-//     next(error)
-//   }
-// })
-
-// // Instance method to check password
-// userSchema.methods.comparePassword = async function(candidatePassword) {
-//   return bcrypt.compare(candidatePassword, this.password)
-// }
-
-// // Instance method to get full name
-// userSchema.methods.getFullName = function() {
-//   return `${this.firstName} ${this.lastName}`
-// }
-
-// // Static method to find active users
-// userSchema.statics.findActive = function() {
-//   return this.find({ isActive: true })
-// }
-
-// // Remove password from JSON output
-// userSchema.methods.toJSON = function() {
-//   const userObject = this.toObject()
-//   delete userObject.password
-//   return userObject
-// }
-
-// module.exports = mongoose.model('User', userSchema)
-
 const mongoose = require('mongoose')
 const bcrypt = require('bcryptjs')
 
@@ -162,8 +41,8 @@ const userSchema = new mongoose.Schema({
     default: 'staff'
   },
   
-  // === EMAIL VERIFICATION FIELDS (NEW) ===
-  isEmailVerified: {
+  // === EMAIL VERIFICATION FIELDS (UPDATED) ===
+  emailVerified: { // CHANGED: from isEmailVerified to emailVerified (to match auth routes)
     type: Boolean,
     default: false
   },
@@ -175,8 +54,12 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: null
   },
+  verificationAttempts: { // NEW: Added missing field for attempt tracking
+    type: Number,
+    default: 0
+  },
   
-  // === PASSWORD RESET FIELDS (NEW) ===
+  // === PASSWORD RESET FIELDS (EXISTING) ===
   passwordResetToken: {
     type: String,
     default: null
@@ -224,7 +107,7 @@ const userSchema = new mongoose.Schema({
     ref: 'User'
   },
   
-  // === APPROVAL FIELDS (NEW) ===
+  // === APPROVAL FIELDS (EXISTING) ===
   approvedBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
@@ -269,7 +152,7 @@ userSchema.statics.findActive = function() {
   return this.find({ isActive: true })
 }
 
-// Remove password from JSON output
+// Remove password and sensitive tokens from JSON output
 userSchema.methods.toJSON = function() {
   const userObject = this.toObject()
   delete userObject.password
@@ -278,7 +161,7 @@ userSchema.methods.toJSON = function() {
   return userObject
 }
 
-// === NEW METHODS FOR EMAIL VERIFICATION ===
+// === UPDATED METHODS FOR EMAIL VERIFICATION ===
 // Generate email verification token
 userSchema.methods.generateEmailVerificationToken = function() {
   const crypto = require('crypto')
@@ -305,25 +188,30 @@ userSchema.methods.generatePasswordResetToken = function() {
 userSchema.methods.clearVerificationTokens = function() {
   this.emailVerificationToken = null
   this.emailVerificationExpires = null
+  this.verificationAttempts = 0 // Reset attempts when clearing
+}
+
+// Clear password reset tokens
+userSchema.methods.clearPasswordResetTokens = function() {
   this.passwordResetToken = null
   this.passwordResetExpires = null
 }
 
-// Approve user account
+// Approve user account (UPDATED to work with approvedBy)
 userSchema.methods.approveAccount = function(approvedByUserId) {
   this.isActive = true
   this.approvedBy = approvedByUserId
   this.approvedAt = new Date()
 }
 
-// Check if user can access admin features
+// Check if user can access admin features (UPDATED field name)
 userSchema.methods.canAccessAdmin = function() {
-  return this.isEmailVerified && this.isActive && ['admin', 'manager', 'super_admin'].includes(this.role)
+  return this.emailVerified && this.isActive && ['admin', 'manager', 'super_admin'].includes(this.role)
 }
 
-// Check if user is super admin
+// Check if user is super admin (UPDATED field name)
 userSchema.methods.isSuperAdmin = function() {
-  return this.role === 'super_admin' && this.isActive && this.isEmailVerified
+  return this.role === 'super_admin' && this.isActive && this.emailVerified
 }
 
 // Check if user can manage other users
@@ -331,12 +219,48 @@ userSchema.methods.canManageUsers = function() {
   return this.isSuperAdmin() || (this.role === 'admin' && this.permissions.users.create)
 }
 
-// === NEW STATIC METHODS ===
-// Find users pending approval
+// NEW: Check if user can attempt email verification
+userSchema.methods.canAttemptVerification = function() {
+  return this.verificationAttempts < 3
+}
+
+// NEW: Increment verification attempts
+userSchema.methods.incrementVerificationAttempts = function() {
+  this.verificationAttempts += 1
+}
+
+// NEW: Reset verification attempts
+userSchema.methods.resetVerificationAttempts = function() {
+  this.verificationAttempts = 0
+}
+
+// NEW: Check if email verification token is valid
+userSchema.methods.isEmailVerificationTokenValid = function(token) {
+  return this.emailVerificationToken === token && 
+         this.emailVerificationExpires && 
+         this.emailVerificationExpires > Date.now()
+}
+
+// NEW: Check if password reset token is valid
+userSchema.methods.isPasswordResetTokenValid = function(token) {
+  return this.passwordResetToken === token && 
+         this.passwordResetExpires && 
+         this.passwordResetExpires > Date.now()
+}
+
+// === UPDATED STATIC METHODS ===
+// Find users pending approval (email verified but not approved) - UPDATED field name
 userSchema.statics.findPendingApproval = function() {
   return this.find({ 
-    isEmailVerified: true, 
+    emailVerified: true, 
     isActive: false 
+  }).select('-password -emailVerificationToken -passwordResetToken')
+}
+
+// Find users pending email verification - UPDATED field name
+userSchema.statics.findPendingEmailVerification = function() {
+  return this.find({ 
+    emailVerified: false 
   }).select('-password -emailVerificationToken -passwordResetToken')
 }
 
@@ -345,16 +269,16 @@ userSchema.statics.findByRole = function(role) {
   return this.find({ role: role, isActive: true })
 }
 
-// Get user statistics
+// Get user statistics - UPDATED field name
 userSchema.statics.getStats = async function() {
   const totalUsers = await this.countDocuments()
   const activeUsers = await this.countDocuments({ isActive: true })
   const pendingApproval = await this.countDocuments({ 
-    isEmailVerified: true, 
+    emailVerified: true, 
     isActive: false 
   })
   const unverifiedEmail = await this.countDocuments({ 
-    isEmailVerified: false 
+    emailVerified: false 
   })
   
   const roleStats = await this.aggregate([
@@ -369,6 +293,22 @@ userSchema.statics.getStats = async function() {
     unverifiedEmail,
     roleBreakdown: roleStats
   }
+}
+
+// NEW: Find users with expired verification tokens
+userSchema.statics.findExpiredVerificationTokens = function() {
+  return this.find({
+    emailVerificationToken: { $ne: null },
+    emailVerificationExpires: { $lt: Date.now() }
+  })
+}
+
+// NEW: Find users with expired password reset tokens  
+userSchema.statics.findExpiredPasswordResetTokens = function() {
+  return this.find({
+    passwordResetToken: { $ne: null },
+    passwordResetExpires: { $lt: Date.now() }
+  })
 }
 
 // === PERMISSION HELPER METHODS ===
@@ -456,6 +396,7 @@ userSchema.pre('save', function(next) {
 userSchema.index({ emailVerificationToken: 1 })
 userSchema.index({ passwordResetToken: 1 })
 userSchema.index({ isActive: 1, role: 1 })
-userSchema.index({ isEmailVerified: 1, isActive: 1 })
+userSchema.index({ emailVerified: 1, isActive: 1 }) // UPDATED: index name changed
+userSchema.index({ verificationAttempts: 1 }) // NEW: index for verification attempts
 
 module.exports = mongoose.model('User', userSchema)
