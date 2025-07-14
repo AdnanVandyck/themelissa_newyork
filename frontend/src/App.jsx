@@ -9,8 +9,10 @@ import Contact from "./pages/Contact"
 import UnitDetails from "./pages/UnitDetails";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
+import AdminApprovalPage from "./components/admin/AdminApprovalPage";
 import PublicRegistration from "./pages/PublicRegistration";
 import EmailVerification from "./pages/EmailVerification";
+
 
 function App() {
   return (
@@ -34,11 +36,13 @@ function App() {
                 element={
                   <ProtectedRoute requireAdmin={true}>
                     <AdminDashboard />
+                    <AdminApprovalPage />
                   </ProtectedRoute>
                 } 
               />
               <Route path="/register" element={<PublicRegistration />} />
               <Route path="/verify-email/:token" element={<EmailVerification />} />
+              {/* <Route path="/admin/users" element={<AdminApprovalPage />} /> */}
             </Routes>
           </main>
           <Footer />
