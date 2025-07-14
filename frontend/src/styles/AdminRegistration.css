@@ -689,3 +689,381 @@
     display: none;
   }
 }
+
+/* Loading States */
+.verification-loading {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.loading-spinner-large {
+  width: 60px;
+  height: 60px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #667eea;
+  border-radius: 50%;
+  animation: spin 1.5s linear infinite;
+  margin: 0 auto 25px;
+}
+
+.verification-loading h2 {
+  color: #333;
+  margin-bottom: 15px;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.verification-loading p {
+  color: #666;
+  margin-bottom: 25px;
+  font-size: 16px;
+}
+
+.loading-progress {
+  max-width: 300px;
+  margin: 0 auto;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 4px;
+  background-color: #e1e5e9;
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  width: 100%;
+  animation: progressSlide 2s ease-in-out infinite;
+}
+
+@keyframes progressSlide {
+  0% { transform: translateX(-100%); }
+  50% { transform: translateX(0%); }
+  100% { transform: translateX(100%); }
+}
+
+.loading-progress small {
+  color: #666;
+  font-size: 12px;
+  font-style: italic;
+}
+
+/* User Info Card */
+.user-info-card {
+  background-color: #f8f9fa;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 25px 0;
+  border-left: 4px solid #667eea;
+}
+
+.user-info-card h4 {
+  color: #333;
+  margin: 0 0 15px 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #e1e5e9;
+}
+
+.info-item:last-child {
+  border-bottom: none;
+}
+
+.info-item .label {
+  font-weight: 500;
+  color: #666;
+  font-size: 14px;
+}
+
+.info-item .value {
+  font-weight: 600;
+  color: #333;
+  font-size: 14px;
+}
+
+.role-badge {
+  background-color: #667eea;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Next Steps */
+.next-steps {
+  background-color: #e8f4f8;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 25px 0;
+  border-left: 4px solid #17a2b8;
+}
+
+.next-steps h4 {
+  color: #0c5460;
+  margin: 0 0 15px 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.approval-note {
+  background-color: #fff3cd;
+  color: #856404;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin: 15px 0 0 0;
+  font-size: 14px;
+  line-height: 1.5;
+  border: 1px solid #ffeaa7;
+}
+
+/* Message Type Styles */
+.info-message {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.info-icon {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #17a2b8, #20c997);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  color: white;
+  margin: 0 auto 25px;
+  box-shadow: 0 10px 30px rgba(23, 162, 184, 0.3);
+}
+
+.warning-message {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.warning-icon {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #ffc107, #fd7e14);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  color: white;
+  margin: 0 auto 25px;
+  box-shadow: 0 10px 30px rgba(255, 193, 7, 0.3);
+}
+
+.error-message-card {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.error-icon {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #dc3545, #c82333);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  color: white;
+  margin: 0 auto 25px;
+  box-shadow: 0 10px 30px rgba(220, 53, 69, 0.3);
+}
+
+.expired-info {
+  background-color: #fff3cd;
+  padding: 15px;
+  border-radius: 8px;
+  margin: 20px 0;
+  border-left: 4px solid #ffc107;
+}
+
+.expired-info p {
+  margin: 8px 0;
+  color: #856404;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Error Details */
+.error-details {
+  margin: 20px 0;
+  text-align: left;
+}
+
+.error-details details {
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  padding: 10px;
+  border: 1px solid #e1e5e9;
+}
+
+.error-details summary {
+  cursor: pointer;
+  font-weight: 500;
+  color: #666;
+  font-size: 14px;
+  padding: 5px;
+}
+
+.error-details summary:hover {
+  color: #333;
+}
+
+.tech-details {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #e1e5e9;
+}
+
+.tech-details p {
+  margin: 5px 0;
+  font-size: 12px;
+  color: #666;
+  font-family: 'Courier New', monospace;
+}
+
+/* Action Buttons */
+.info-actions,
+.warning-actions,
+.error-actions {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin-top: 30px;
+  flex-wrap: wrap;
+}
+
+/* Animations for different states */
+.info-message,
+.warning-message,
+.error-message-card {
+  animation: slideInUp 0.6s ease-out;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Message Headers */
+.info-message h2,
+.warning-message h2,
+.error-message-card h2 {
+  color: #333;
+  margin-bottom: 18px;
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.info-message p,
+.warning-message p,
+.error-message-card p {
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 18px;
+  font-size: 16px;
+}
+
+/* Responsive Design for Verification Pages */
+@media (max-width: 768px) {
+  .verification-loading,
+  .info-message,
+  .warning-message,
+  .error-message-card {
+    padding: 30px 15px;
+  }
+  
+  .loading-spinner-large {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .info-icon,
+  .warning-icon,
+  .error-icon {
+    width: 65px;
+    height: 65px;
+    font-size: 32px;
+  }
+  
+  .user-info-card,
+  .next-steps {
+    padding: 15px;
+    margin: 20px 0;
+  }
+  
+  .info-actions,
+  .warning-actions,
+  .error-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .info-grid {
+    gap: 8px;
+  }
+  
+  .info-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  
+  .info-item .label,
+  .info-item .value {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .verification-loading h2,
+  .info-message h2,
+  .warning-message h2,
+  .error-message-card h2 {
+    font-size: 22px;
+  }
+  
+  .user-info-card h4,
+  .next-steps h4 {
+    font-size: 15px;
+  }
+  
+  .progress-bar {
+    height: 3px;
+  }
+  
+  .approval-note {
+    font-size: 13px;
+    padding: 10px 12px;
+  }
+}

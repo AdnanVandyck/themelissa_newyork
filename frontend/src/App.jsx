@@ -10,6 +10,7 @@ import UnitDetails from "./pages/UnitDetails";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 import PublicRegistration from "./pages/PublicRegistration";
+import EmailVerification from "./pages/EmailVerification";
 
 function App() {
   return (
@@ -37,6 +38,7 @@ function App() {
                 } 
               />
               <Route path="/register" element={<PublicRegistration />} />
+              <Route path="/verify-email/:token" element={<EmailVerification />} />
             </Routes>
           </main>
           <Footer />

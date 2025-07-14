@@ -1,9 +1,11 @@
 import axios from 'axios'
+import { API_URL } from '../config/api';
 
 // Render API URL - Production
-const API_URL = 'https://themelissa-backend.onrender.com'
+// const API_URL = 'https://themelissa-backend.onrender.com'
 
-console.log('🚀 API URL (Render):', API_URL);
+// console.log('🚀 API URL (Render):', API_URL);
+console.log('🚀 API URL (Auto-detected):', API_URL);
 console.log('🌍 Environment:', import.meta.env.MODE);
 
 const api = axios.create({
@@ -115,6 +117,14 @@ export const authAPI = {
   login: (credentials) => api.post('/api/auth/login', credentials),
   register: (userData) => api.post('/api/auth/register', userData),
   verify: () => api.get('/api/auth/verify'),
+  verifyEmail: (token) => {
+  console.log('📧 Verifying email token:', token);
+  return api.post(`/api/auth/verify-email/${token}`);
+  },
+  resendVerification: (email) => {
+  console.log('📧 Resending verification email to:', email);
+  return api.post('/api/auth/resend-verification', { email });
+  },
   
   // NEW: Add these endpoints for enhanced registration
   registerPublic: (userData) => {
