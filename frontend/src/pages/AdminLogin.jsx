@@ -78,13 +78,17 @@ const AdminLogin = () => {
         localStorage.setItem('user', JSON.stringify(data.user));
         
         console.log('✅ Login successful, redirecting to dashboard');
+        console.log('👤 User role:', data.user.role); // Debug log to see the role
         
-        // Redirect based on role
-        if (data.user.role === 'admin') {
+        // FIXED: Enhanced redirect based on role - includes super_admin
+        if (data.user.role === 'super_admin' || data.user.role === 'admin') {
+          console.log('🚀 Redirecting to admin dashboard for role:', data.user.role);
           navigate('/admin/dashboard');
         } else if (data.user.role === 'manager') {
+          console.log('🚀 Redirecting to manager dashboard');
           navigate('/manager/dashboard');
         } else {
+          console.log('🚀 Redirecting to staff dashboard');
           navigate('/staff/dashboard');
         }
       } else {
@@ -97,13 +101,17 @@ const AdminLogin = () => {
           setUserEmail(data.email);
         } else if (data.pendingApproval) {
           setError('Your account is pending approval. Please contact an administrator.');
+        } else if (data.code === 'ACCOUNT_LOCKED') {
+          setError('Account temporarily locked due to too many failed login attempts. Please try again later.');
+        } else if (data.code === 'LOGIN_LIMIT_EXCEEDED') {
+          setError('Too many login attempts. Please try again in 15 minutes.');
         } else {
           setError(data.message || 'Login failed. Please check your credentials.');
         }
       }
     } catch (error) {
       console.error('❌ Login error:', error);
-      setError('Network error. Please try again.');
+      setError('Network error. Please check your connection and try again.');
     } finally {
       setLoading(false);
     }
@@ -130,6 +138,7 @@ const AdminLogin = () => {
       if (response.ok && data.success) {
         alert('Verification email sent successfully! Please check your inbox.');
         setShowResendOption(false);
+        setError('');
       } else {
         alert(data.message || 'Failed to resend verification email');
       }
@@ -209,6 +218,8 @@ const AdminLogin = () => {
                 fontSize: '0.9rem',
                 cursor: 'pointer'
               }}
+              onMouseOver={(e) => e.target.style.backgroundColor = '#6c5104'}
+              onMouseOut={(e) => e.target.style.backgroundColor = '#856404'}
             >
               Resend Verification Email
             </button>
@@ -363,6 +374,8 @@ const AdminLogin = () => {
               fontSize: '0.9rem',
               fontWeight: '500'
             }}
+            onMouseOver={(e) => e.target.style.color = '#5a67d8'}
+            onMouseOut={(e) => e.target.style.color = '#667eea'}
           >
             Create Account
           </button>

@@ -379,7 +379,7 @@ const UnitDetails = () => {
           )}
           
           {/* Storage Type Indicator */}
-          <div style={{ 
+          {/* <div style={{ 
             textAlign: 'center', 
             marginTop: '0.5rem',
             fontSize: '0.8rem', 
@@ -390,7 +390,7 @@ const UnitDetails = () => {
                 ☁️ High-resolution images • Optimized for fast loading
               </span>
             )}
-          </div>
+          </div> */}
         </div>
       </div>
       

@@ -108,16 +108,17 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     console.log('AuthContext: Logging out user:', user?.username);
     localStorage.removeItem('token');
+    localStorage.removeItem('user'); // Also clear stored user data
     setUser(null);
     
     // Optional: Redirect to home page after logout
     window.location.href = '/';
   };
 
-  // Check if current user is admin
+  // FIXED: Check if current user is admin or super_admin
   const isAdmin = () => {
-    const result = user?.role === 'admin';
-    console.log('AuthContext: isAdmin check:', result, 'for user:', user?.username);
+    const result = user?.role === 'admin' || user?.role === 'super_admin';
+    console.log('AuthContext: isAdmin check:', result, 'for user:', user?.username, 'role:', user?.role);
     return result;
   };
 
@@ -125,6 +126,48 @@ export const AuthProvider = ({ children }) => {
   const isAuthenticated = () => {
     const result = !!user;
     console.log('AuthContext: isAuthenticated check:', result);
+    return result;
+  };
+
+  // NEW: Check if user is super admin specifically
+  const isSuperAdmin = () => {
+    const result = user?.role === 'super_admin';
+    console.log('AuthContext: isSuperAdmin check:', result, 'for user:', user?.username);
+    return result;
+  };
+
+  // NEW: Check if user is manager or higher
+  const isManager = () => {
+    const result = user?.role === 'manager' || user?.role === 'admin' || user?.role === 'super_admin';
+    console.log('AuthContext: isManager check:', result, 'for user:', user?.username, 'role:', user?.role);
+    return result;
+  };
+
+  // NEW: Flexible role checking with hierarchy
+  const hasRole = (requiredRole) => {
+    // Define role hierarchy - higher roles include lower role permissions
+    const roleHierarchy = {
+      'staff': ['staff'],
+      'manager': ['staff', 'manager'],
+      'admin': ['staff', 'manager', 'admin'],
+      'super_admin': ['staff', 'manager', 'admin', 'super_admin']
+    };
+    
+    const userRoles = roleHierarchy[user?.role] || [];
+    const result = userRoles.includes(requiredRole);
+    console.log('AuthContext: hasRole check:', result, 'for role:', requiredRole, 'user role:', user?.role);
+    return result;
+  };
+
+  // NEW: Check specific permissions
+  const hasPermission = (resource, action) => {
+    if (!user?.permissions) return false;
+    
+    const resourcePermissions = user.permissions[resource];
+    if (!resourcePermissions) return false;
+    
+    const result = resourcePermissions[action] === true;
+    console.log('AuthContext: hasPermission check:', result, 'for', `${resource}.${action}`, 'user:', user?.username);
     return result;
   };
 
@@ -185,8 +228,12 @@ export const AuthProvider = ({ children }) => {
     verifyToken,
     
     // Permission checks
-    isAdmin,
+    isAdmin,           // FIXED: Now includes super_admin
     isAuthenticated,
+    isSuperAdmin,      // NEW: Check for super_admin specifically
+    isManager,         // NEW: Check for manager or higher
+    hasRole,           // NEW: Hierarchical role checking
+    hasPermission,     // NEW: Granular permission checking
     
     // API utilities
     getAuthHeader,
