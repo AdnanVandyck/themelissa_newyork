@@ -9,6 +9,7 @@ import Contact from "./pages/Contact"
 import UnitDetails from "./pages/UnitDetails";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
+import PublicRegistration from "./pages/PublicRegistration";
 
 function App() {
   return (
@@ -35,6 +36,7 @@ function App() {
                   </ProtectedRoute>
                 } 
               />
+              <Route path="/register" element={<PublicRegistration />} />
             </Routes>
           </main>
           <Footer />

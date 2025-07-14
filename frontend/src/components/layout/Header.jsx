@@ -267,7 +267,7 @@ const Header = () => {
                   e.target.style.transform = 'translateY(0)'
                 }}
               >
-                Admin
+
               </Link>
             )}
           </Nav>
