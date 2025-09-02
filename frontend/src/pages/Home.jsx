@@ -570,7 +570,7 @@ const Home = () => {
               </p>
             </div>
             
-            <div>
+            {/* <div>
               <div style={{
                 width: '60px',
                 height: '60px',
@@ -597,9 +597,42 @@ const Home = () => {
                 color: '#666',
                 lineHeight: '1.5'
               }}>
+
+              </p>
+            </div> */}
+
+            <div>
+              <div style={{
+                width: '60px',
+                height: '60px',
+                backgroundColor: '#f8f8f8',
+                borderRadius: '50%',
+                margin: '0 auto 20px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '24px'
+              }}>
+                📱
+              </div>
+              <h4 style={{
+                fontSize: '1.1rem',
+                fontWeight: '500',
+                marginBottom: '10px',
+                color: '#333'
+              }}>
+                24/7 Remote Doorman
+              </h4>
+              <p style={{
+                fontSize: '14px',
+                color: '#666',
+                lineHeight: '1.5'
+              }}>
                 {/* Secure underground parking spaces available */}
               </p>
             </div>
+
+
           </div>
         </div>
       </section>

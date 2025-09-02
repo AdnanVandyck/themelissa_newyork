@@ -1,5 +1,107 @@
-import React, { useState } from 'react';
+
+
+import React, { useState, useCallback } from 'react';
 import { unitAPI } from '../../services/api';
+
+// Smart environment detection for image URLs
+const getImageUrl = (imagePath) => {
+  if (!imagePath) return '';
+  
+  // If it's already a full URL (http/https), return as-is
+  if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+    return imagePath;
+  }
+  
+  // Smart API URL detection based on current window location
+  const currentHost = window.location.hostname;
+  let baseUrl;
+  
+  if (currentHost === 'localhost' || currentHost === '127.0.0.1') {
+    baseUrl = 'http://localhost:5000';
+  } else if (currentHost.includes('192.168.') || currentHost.includes('10.') || currentHost.includes('172.')) {
+    // Network/mobile testing
+    baseUrl = `http://${currentHost.split(':')[0]}:5000`;
+  } else if (currentHost === 'themelissanyc.com') {
+    baseUrl = 'https://themelissa-backend.onrender.com';
+  } else {
+    // Fallback to production
+    baseUrl = 'https://themelissa-backend.onrender.com';
+  }
+  
+  // Ensure imagePath starts with / for proper URL construction
+  const cleanPath = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
+  
+  return `${baseUrl}${cleanPath}`;
+};
+
+const ImageDisplay = ({ src, alt, style, onError, onLoad }) => {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  
+  const handleLoad = () => {
+    setLoading(false);
+    setError(false);
+    if (onLoad) onLoad();
+  };
+  
+  const handleError = (e) => {
+    console.error('Image failed to load:', src);
+    setLoading(false);
+    setError(true);
+    if (onError) onError(e);
+  };
+  
+  const processedSrc = getImageUrl(src);
+  
+  return (
+    <div style={{ position: 'relative', ...style }}>
+      {loading && (
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: '#f8f9fa',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          borderRadius: '8px',
+          border: '1px solid #ddd'
+        }}>
+          <span style={{ color: '#6c757d', fontSize: '12px' }}>Loading...</span>
+        </div>
+      )}
+      {error ? (
+        <div style={{
+          width: '100%',
+          height: '100px',
+          backgroundColor: '#f8f9fa',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          borderRadius: '8px',
+          border: '1px solid #ddd',
+          color: '#6c757d',
+          fontSize: '12px'
+        }}>
+          Failed to load
+        </div>
+      ) : (
+        <img
+          src={processedSrc}
+          alt={alt}
+          style={{
+            ...style,
+            display: loading ? 'none' : 'block'
+          }}
+          onLoad={handleLoad}
+          onError={handleError}
+        />
+      )}
+    </div>
+  );
+};
 
 const ImageUploader = ({ unit, onImagesUpdated }) => {
   const [selectedFiles, setSelectedFiles] = useState([]);
@@ -9,6 +111,14 @@ const ImageUploader = ({ unit, onImagesUpdated }) => {
 
   const handleFileSelect = (e) => {
     const files = Array.from(e.target.files);
+    
+    // Validate file sizes (max 10MB per file)
+    const oversizedFiles = files.filter(file => file.size > 10 * 1024 * 1024);
+    if (oversizedFiles.length > 0) {
+      setError(`Some files are too large. Maximum size is 10MB per file.`);
+      return;
+    }
+    
     setSelectedFiles(files);
     setError('');
     setSuccess('');
@@ -63,6 +173,8 @@ const ImageUploader = ({ unit, onImagesUpdated }) => {
 
     try {
       setError('');
+      setSuccess('');
+      
       const response = await unitAPI.removeImageFromUnit(unit._id, imageIndex);
       console.log('Remove image response:', response.data);
       
@@ -79,9 +191,19 @@ const ImageUploader = ({ unit, onImagesUpdated }) => {
     }
   };
 
+  // Safely build images array
   const allImages = [];
-  if (unit?.imageURL) allImages.push(unit.imageURL);
-  if (unit?.images) allImages.push(...unit.images);
+  if (unit?.imageURL && unit.imageURL.trim()) {
+    allImages.push(unit.imageURL);
+  }
+  if (unit?.images && Array.isArray(unit.images)) {
+    allImages.push(...unit.images.filter(img => img && img.trim()));
+  }
+
+  const clearMessages = useCallback(() => {
+    setError('');
+    setSuccess('');
+  }, []);
 
   return (
     <div style={{ marginBottom: '2rem' }}>
@@ -98,10 +220,10 @@ const ImageUploader = ({ unit, onImagesUpdated }) => {
             marginBottom: '1rem'
           }}>
             {allImages.map((image, index) => (
-              <div key={index} style={{ position: 'relative' }}>
-                <img
+              <div key={`${unit._id}-${index}-${image}`} style={{ position: 'relative' }}>
+                <ImageDisplay
                   src={image}
-                  alt={`Unit image ${index + 1}`}
+                  alt={`Unit ${unit.unitNumber || unit._id} - Image ${index + 1}`}
                   style={{
                     width: '100%',
                     height: '100px',
@@ -109,6 +231,7 @@ const ImageUploader = ({ unit, onImagesUpdated }) => {
                     borderRadius: '8px',
                     border: '1px solid #ddd'
                   }}
+                  onError={() => console.error(`Failed to load image ${index + 1}:`, image)}
                 />
                 <button
                   onClick={() => removeImage(index)}
@@ -126,7 +249,8 @@ const ImageUploader = ({ unit, onImagesUpdated }) => {
                     fontSize: '14px',
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'center'
+                    justifyContent: 'center',
+                    zIndex: 10
                   }}
                   title="Remove image"
                 >
@@ -148,9 +272,25 @@ const ImageUploader = ({ unit, onImagesUpdated }) => {
             color: '#721c24',
             padding: '0.75rem',
             borderRadius: '5px',
-            marginBottom: '1rem'
+            marginBottom: '1rem',
+            position: 'relative'
           }}>
             {error}
+            <button
+              onClick={clearMessages}
+              style={{
+                position: 'absolute',
+                top: '5px',
+                right: '10px',
+                background: 'none',
+                border: 'none',
+                color: '#721c24',
+                cursor: 'pointer',
+                fontSize: '16px'
+              }}
+            >
+              ×
+            </button>
           </div>
         )}
         
@@ -160,9 +300,25 @@ const ImageUploader = ({ unit, onImagesUpdated }) => {
             color: '#155724',
             padding: '0.75rem',
             borderRadius: '5px',
-            marginBottom: '1rem'
+            marginBottom: '1rem',
+            position: 'relative'
           }}>
             {success}
+            <button
+              onClick={clearMessages}
+              style={{
+                position: 'absolute',
+                top: '5px',
+                right: '10px',
+                background: 'none',
+                border: 'none',
+                color: '#155724',
+                cursor: 'pointer',
+                fontSize: '16px'
+              }}
+            >
+              ×
+            </button>
           </div>
         )}
 
@@ -171,7 +327,7 @@ const ImageUploader = ({ unit, onImagesUpdated }) => {
             id="image-upload-input"
             type="file"
             multiple
-            accept="image/*"
+            accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
             onChange={handleFileSelect}
             style={{
               marginBottom: '1rem',
