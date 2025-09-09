@@ -206,7 +206,7 @@ const Home = () => {
                 marginBottom: '25px'
               }}>
                 This boutique six-story building offers an intimate residential experience, enhanced by a curated suite of lifestyle amenities: complimentary high-speed Wi-Fi, 
-                monthly housekeeping, in-unit washer/dryers, and Smart TVs in every home. 
+                monthly housekeeping, in-unit washer/dryers in every home. 
                 While The Melissa does not feature an elevator, its graceful scale and classic walk-up design contribute to its charm—and its prime location 
                 places residents in the heart of one of Manhattan’s most coveted neighborhoods.
               </p>
